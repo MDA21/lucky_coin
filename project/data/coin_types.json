@@ -1,0 +1,18 @@
+{
+	"real_coin": {
+		"name": "真硬币",
+		"base_value": 1,
+		"texture": "res://assets/coins/real.png",
+		"is_direct_cash": true
+	},
+	"clover_coin": {
+		"name": "三叶草币",
+		"texture_base": "res://assets/coins/clover",
+		"patterns": ["weed", "clover", "four_leaf_clover"],
+		"pattern_values": [1, 2, 5],
+		"combo_settings": {
+			"same_type_multiplier": 1.2,
+			"min_combo_count": 3
+		}
+	}
+}
