@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://b3pm8taf12ekg"]
+
+[ext_resource type="Script" uid="uid://bj84vegfwfmhm" path="res://project/scripts/views/base_view.gd" id="1_fpwgf"]
+
+[node name="BaseView" type="CanvasLayer"]
+script = ExtResource("1_fpwgf")
+
+[node name="BackgroundWall" type="ColorRect" parent="."]
+z_index = -10
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
