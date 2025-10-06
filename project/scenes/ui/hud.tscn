@@ -1,9 +1,27 @@
-[gd_scene format=3 uid="uid://dcu78nm7yhngx"]
+[gd_scene load_steps=4 format=3 uid="uid://dcu78nm7yhngx"]
 
-[node name="Hud" type="Control"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[ext_resource type="Script" uid="uid://bi1adm818j1fh" path="res://project/scripts/ui/hud.gd" id="1_ah3le"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ah3le"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gojiv"]
+bg_color = Color(0.8420815, 0.6418962, 3.85046e-07, 1)
+
+[node name="hud" type="CanvasLayer"]
+layer = 2
+script = ExtResource("1_ah3le")
+
+[node name="CoinPusherBar" type="ProgressBar" parent="."]
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 530.0
+offset_bottom = 70.0
+theme_override_styles/background = SubResource("StyleBoxFlat_ah3le")
+theme_override_styles/fill = SubResource("StyleBoxFlat_gojiv")
+show_percentage = false
