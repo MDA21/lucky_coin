@@ -1,0 +1,7 @@
+{
+  "initial_debt": {
+	"amount": 500.0,
+	"rounds_due": 10,
+	"description": "最初的债务"
+  }
+}
