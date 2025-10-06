@@ -6,6 +6,10 @@
 
 ## 更新日志
 
+**2025.10.6 泽康** 
+
+创建了main_menu hall bank store四个一级视图和base视图用于继承。在main_menu视图中设置了“开始游戏”按钮，在hall场景中建立了简单的文字说明和拉杆的接口，实现了三个场景之间的跳转（按A D键跳转）。
+
 **2025.10.4  Ziggy**
 
 在文档末尾补充了每个脚本/场景的具体功能，完成了scripts/components三个脚本，在场景中新建了一些节点，具体见代码
@@ -23,7 +27,11 @@ lucky_coin/
 │   │   ├── channel.tscn            # 通道组件场景（待创建）
 │   │   └── interactive_area.tscn   # 交互区域场景（待创建）
 │   ├── views/                      # 游戏视图场景
-│   │   ├── hall_view.tscn          # 大厅视角（一级）（待创建）
+|   |   ├── base_view.tscn			# 一级视角基类，用于继承✅
+│   │   ├── main_menu_view.tscn     # 主菜单视角（一级）✅
+│   │   ├── hall_view.tscn          # 大厅视角（一级）✅
+|   |   ├── bank_view.tscn			# 银行视角（一级）✅
+|   |   ├── store_view.tscn			# 银行视角（一级）✅
 │   │   ├── slot_machine_view.tscn  # 推币机视角（二级）（待创建）
 │   │   └── channel_view.tscn       # 通道视角（三级）（待创建）
 │   └── systems/                    # 系统管理场景
@@ -39,7 +47,11 @@ lucky_coin/
 │   │   ├── bank_system.gd          # 银行系统（待创建）
 │   │   └── event_system.gd         # 事件系统（待创建）
 │   ├── views/                      # 视图控制
-│   │   ├── hall_view.gd            # 大厅视图控制（待创建）
+│   │   ├── main_menu_view.gd       # 主菜单控制（开始游戏）✅
+│   │   ├── base_view.gd            # 基类视图控制✅
+│   │   ├── hall_view.gd            # 大厅视图控制✅
+│   │   ├── store_view.gd           # 大厅视图控制✅
+│   │   ├── bank_view.gd            # 大厅视图控制✅
 │   │   ├── slot_machine_view.gd    # 推币机视图控制（待创建）
 │   │   └── channel_view.gd         # 通道视图控制（待创建）
 │   ├── ui/                         # UI控制
