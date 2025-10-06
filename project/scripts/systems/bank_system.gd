@@ -42,7 +42,7 @@ func process_end_of_round():
 		bank_data_updated.emit(savings)
 
 func _load_config() -> Dictionary:
-	var file = FileAccess.open("res://data/game_config.json", FileAccess.READ)
+	var file = FileAccess.open("res://project/data/game_config.json", FileAccess.READ)
 	if file:
 		return JSON.parse_string(file.get_as_text())
 	return {}

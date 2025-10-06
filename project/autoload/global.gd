@@ -1,4 +1,3 @@
-# autoload/global.gd
 extends Node
 
 #预加载通知场景

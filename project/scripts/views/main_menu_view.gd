@@ -38,3 +38,4 @@ func setup_background():
 
 func _on_start_game_button_pressed():
 	emit_signal("request_game_start")
+	GameManager.start_new_game()
