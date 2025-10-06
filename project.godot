@@ -15,6 +15,11 @@ run/main_scene="uid://ybm3nq4wjnfl"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Global="*res://project/autoload/global.gd"
+GameManager="*res://project/scenes/systems/game_manager.tscn"
+
 [editor]
 
 version_control/autoload_on_startup=true

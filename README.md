@@ -6,6 +6,10 @@
 
 ## 更新日志
 
+**2025.10.6 Ziggy**
+
+完成了大部分游戏核心系统的脚本编写，并挂载到game_manager。创建了两个全局变量（autoload和game_manager），新增了通知弹窗场景并配上粗糙动画。更新了game_manager的控制脚本。更新了硬币、商店、债务等数据文件（.json）
+
 **2025.10.6 泽康** 
 
 创建了main_menu hall bank store四个一级视图和base视图用于继承。在main_menu视图中设置了“开始游戏”按钮，在hall场景中建立了简单的文字说明和拉杆的接口，实现了三个场景之间的跳转（按A D键跳转）。
@@ -22,29 +26,39 @@
 ```
 lucky_coin/
 ├── scenes/                          # 主要场景文件
-│   ├── components/                  # 组件场景（需要创建）
+│   ├── components/                  # 组件场景
 │   │   ├── coin.tscn               # 硬币组件场景（待创建）
 │   │   ├── channel.tscn            # 通道组件场景（待创建）
 │   │   └── interactive_area.tscn   # 交互区域场景（待创建）
+│   ├── ui/                         # UI相关场景
+│   │   ├── notification_popup.tscn # 通知弹窗场景 ✅ 
+│   │   │   └── Control (NotificationPopup)
+│   │   │       ├── ColorRect
+│   │   │       ├── MarginContainer
+│   │   │       │   └── Label
+│   │   │       └── AnimationPlayer
+│   │   ├── main_ui.tscn            # 主UI界面（待创建）
+│   │   ├── hud.tscn                # 游戏HUD（待创建）
+│   │   └── dialogs/                # 各种对话框（待创建）
 │   ├── views/                      # 游戏视图场景
-|   |   ├── base_view.tscn			# 一级视角基类，用于继承✅
+|   |   ├── base_view.tscn          # 一级视角基类，用于继承✅
 │   │   ├── main_menu_view.tscn     # 主菜单视角（一级）✅
 │   │   ├── hall_view.tscn          # 大厅视角（一级）✅
-|   |   ├── bank_view.tscn			# 银行视角（一级）✅
-|   |   ├── store_view.tscn			# 银行视角（一级）✅
+|   |   ├── bank_view.tscn          # 银行视角（一级）✅
+|   |   ├── store_view.tscn         # 银行视角（一级）✅
 │   │   ├── slot_machine_view.tscn  # 推币机视角（二级）（待创建）
-│   │   └── channel_view.tscn       # 通道视角（三级）（待创建）
+│   │   └── channel_view.tscn       # 通道视角（三级）（待创建）（待讨论）
 │   └── systems/                    # 系统管理场景
-│       └── game_manager.tscn       # 游戏管理器（待创建）
+│       └── game_manager.tscn       # 游戏管理器 ✅ (已创建，并包含子系统节点)
 ├── scripts/                        # 脚本文件
 │   ├── systems/                    # 核心系统
-│   │   ├── game_manager.gd         # 游戏总管理器（待创建）
-│   │   ├── coin_system.gd          # 硬币系统（待创建）
-│   │   ├── debt_system.gd          # 债务系统（待创建）
-│   │   ├── stress_system.gd        # 压力系统（待创建）
+│   │   ├── game_manager.gd         # 游戏总管理器✅（暂时）
+│   │   ├── coin_system.gd          # 硬币系统 ✅
+│   │   ├── debt_system.gd          # 债务系统 ✅
+│   │   ├── stress_system.gd        # 压力系统 ✅
 │   │   ├── currency_system.gd      # 货币系统（待创建）
-│   │   ├── shop_system.gd          # 商店系统（待创建）
-│   │   ├── bank_system.gd          # 银行系统（待创建）
+│   │   ├── shop_system.gd          # 商店系统 ✅
+│   │   ├── bank_system.gd          # 银行系统 ✅
 │   │   └── event_system.gd         # 事件系统（待创建）
 │   ├── views/                      # 视图控制
 │   │   ├── main_menu_view.gd       # 主菜单控制（开始游戏）✅
@@ -55,9 +69,10 @@ lucky_coin/
 │   │   ├── slot_machine_view.gd    # 推币机视图控制（待创建）
 │   │   └── channel_view.gd         # 通道视图控制（待创建）
 │   ├── ui/                         # UI控制
+│   │   ├── notification_popup.gd   # 通知弹窗脚本 ✅ 
 │   │   ├── main_ui.gd              # 主UI控制（待创建）
 │   │   └── hud.gd                  # HUD控制（待创建）
-│   └── components/                 # 组件脚本（✅ 已完成）
+│   └── components/                 # 组件脚本
 │       ├── coin.gd                 # 硬币基类 ✅
 │       ├── channel.gd              # 通道组件 ✅
 │       └── interactive_area.gd     # 可交互区域 ✅
@@ -69,12 +84,12 @@ lucky_coin/
 │   ├── fonts/                      # 字体文件（需要创建）
 │   └── audio/                      # 音效文件（需要创建）
 ├── data/                           # 数据文件
-│   ├── coin_types.json             # 硬币类型配置（✅ 部分完成）
-│   ├── shop_items.json             # 商店物品配置（待创建）
-│   ├── debt_config.json            # 债务配置（待创建）
-│   └── game_config.json            # 游戏配置（待创建）
+│   ├── coin_types.json             # 硬币类型配置 ✅ (已更新内容)
+│   ├── shop_items.json             # 商店物品配置 ✅ (已更新内容)
+│   ├── debt_config.json            # 债务配置 ✅ (已更新内容)
+│   └── game_config.json            # 游戏配置 ✅ (已更新内容)
 └── autoload/                       # 自动加载脚本
-	├── global.gd                   # 全局变量和方法（待创建）
+	├── global.gd                   # 全局变量和方法 ✅ (已设置Autoload)
 	└── audio_manager.gd            # 音频管理器（待创建）
 ```
 
