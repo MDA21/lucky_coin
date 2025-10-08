@@ -1,0 +1,29 @@
+[
+  {
+	"id": "event_001",
+	"name": "金钱事件",
+	"description": "收到了家人的打款",
+	"effect": {
+	  "action": "add_money",
+	  "value": 20.0
+	}
+  },
+  {
+	"id": "event_002",
+	"name": "压力事件",
+	"description": "收到花呗还款信息，压力增加了",
+	"effect": {
+	  "action": "add_stress",
+	  "value": 10.0
+	}
+  },
+   {
+	"id": "event_001",
+	"name": "金钱事件",
+	"description": "你决定犒劳自己一顿",
+	"effect": {
+	  "action": "reduce_money",
+	  "value": 15.0
+	}
+  },
+]
