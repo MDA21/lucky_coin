@@ -1,0 +1,42 @@
+{
+  "real_coin": {
+	"name": "真硬币",
+	"base_value": 1,
+	"texture": "res://assets/images/coins/real.png",
+	"is_direct_cash": true,
+	"base_probability_weight": 50
+  },
+  "clover_coin": {
+	"name": "三叶草币",
+	"texture": "res://assets/images/coins/clover.png",
+	"base_probability_weight": 25,
+	"patterns": ["weed", "clover", "four_leaf_clover"],
+	"pattern_values": [1, 3, 10],
+	"combo_settings": {
+	  "min_combo_count": 3,
+	  "same_type_multiplier": 1.2
+	}
+  },
+  "lemon_coin": {
+	"name": "柠檬币",
+	"texture": "res://assets/images/coins/lemon.png",
+	"base_probability_weight": 15,
+	"patterns": ["lemon_slice", "one_lemon", "three_lemons"],
+	"pattern_values": [2, 5, 15],
+	"combo_settings": {
+	  "min_combo_count": 3,
+	  "same_type_multiplier": 1.3
+	}
+  },
+  "cherry_coin": {
+	"name": "樱桃币",
+	"texture": "res://assets/images/coins/cherry.png",
+	"base_probability_weight": 10,
+	"patterns": ["one_cherry", "two_cherries", "cherry_bunch"],
+	"pattern_values": [3, 7, 20],
+	"combo_settings": {
+	  "min_combo_count": 2,
+	  "same_type_multiplier": 1.5
+	}
+  }
+}

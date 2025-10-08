@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://dvbts1cuamj52"]
+
+[ext_resource type="PackedScene" uid="uid://b3pm8taf12ekg" path="res://project/scenes/views/base_view.tscn" id="1_v2ch5"]
+[ext_resource type="Script" uid="uid://bhiphes5cq6it" path="res://project/scripts/views/store_view.gd" id="2_ra4j3"]
+
+[node name="BaseView" instance=ExtResource("1_v2ch5")]
+script = ExtResource("2_ra4j3")
+
+[node name="BackgroundWall" parent="." index="0"]
+color = Color(0.7647059, 0.7607843, 1, 1)

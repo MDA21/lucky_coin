@@ -1,0 +1,43 @@
+[gd_scene load_steps=5 format=3 uid="uid://btb6k8akugxvn"]
+
+[ext_resource type="PackedScene" uid="uid://b3pm8taf12ekg" path="res://project/scenes/views/base_view.tscn" id="1_eccyt"]
+[ext_resource type="Script" uid="uid://bu3b50wcusayc" path="res://project/scripts/views/hall_view.gd" id="2_d68tx"]
+[ext_resource type="Texture2D" uid="uid://8qq2rx4o21pe" path="res://icon.svg" id="3_ynd7e"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jk3p0"]
+size = Vector2(128, 128)
+
+[node name="BaseView" instance=ExtResource("1_eccyt")]
+script = ExtResource("2_d68tx")
+
+[node name="BackgroundWall" parent="." index="0"]
+color = Color(1, 0.85882354, 0.85882354, 1)
+
+[node name="LeverSprite" type="Sprite2D" parent="." index="1"]
+position = Vector2(800, 200)
+scale = Vector2(0.5, 1)
+texture = ExtResource("3_ynd7e")
+
+[node name="LeverAnimator" type="AnimationPlayer" parent="LeverSprite" index="0"]
+
+[node name="LeverArea" type="Area2D" parent="LeverSprite" index="1"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LeverSprite/LeverArea" index="0"]
+shape = SubResource("RectangleShape2D_jk3p0")
+
+[node name="LabelTest1" type="Label" parent="." index="2"]
+offset_left = 856.0
+offset_top = 194.0
+offset_right = 936.0
+offset_bottom = 217.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "这里是拉杆"
+
+[node name="Label1" type="Label" parent="." index="3"]
+offset_left = 83.0
+offset_top = 146.0
+offset_right = 413.08698
+offset_bottom = 198.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 32
+text = "按下“A”\"D\"切换场景"
