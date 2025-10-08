@@ -10,10 +10,11 @@ var current_stress: float = 0.0
 var current_debt: float = 0.0
 
 #全局信号中心
-signal money_changed(new_amount)
+signal money_changed(new_amount) # 常规货币变化时发出？
 signal stress_changed(new_amount)
 signal debt_changed(new_amount)
 signal game_over_triggered(reason)
+signal casino_currency_changed(new_value)   # 赌场货币变化时发出
 
 #系统引用
 var game_manager = null
@@ -54,3 +55,17 @@ func update_stress(new_stress: float):
 func update_debt(new_debt: float):
 	current_debt = new_debt
 	debt_changed.emit(current_debt)
+
+   # 获取赌场货币
+func gain_casino_currency(amount):
+    if amount > 0:
+        Global.casino_currency += amount
+        casino_currency_changed.emit(casino_currency)
+
+    # 消耗赌场货币
+func spend_casino_currency(amount):
+    if amount > 0 and Global.casino_currency >= amount:
+        Global.casino_currency -= amount
+        casino_currency_changed.emit(casino_currency)
+        return true  # 消耗成功
+    return false  # 消耗失败
