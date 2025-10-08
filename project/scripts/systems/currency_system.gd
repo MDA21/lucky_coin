@@ -16,7 +16,7 @@ func convert_to_casino(): # 货币转换系统，暂时定为常规货币二比�
 		Global.casino_currency += converted_amount
 		
 		# 发出信号通知变化
-		regular_currency_changed.emit(Global.current_money)
+		money_changed.emit(Global.current_money)
 		casino_currency_changed.emit(Global.casino_currency)
 		
 		return true  # 转换成功
