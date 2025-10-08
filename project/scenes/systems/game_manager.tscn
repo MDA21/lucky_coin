@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://ybm3nq4wjnfl"]
+[gd_scene load_steps=8 format=3 uid="uid://ybm3nq4wjnfl"]
 
 [ext_resource type="Script" uid="uid://d0jn4tc0becll" path="res://project/scripts/systems/game_manager.gd" id="1_wxrnf"]
 [ext_resource type="Script" uid="uid://blp34coo2h6at" path="res://project/scripts/systems/stress_system.gd" id="2_ibhnd"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bk462grbe510i" path="res://project/scripts/systems/shop_system.gd" id="4_v63m6"]
 [ext_resource type="Script" uid="uid://bu3lno2030dtq" path="res://project/scripts/systems/bank_system.gd" id="5_usw5k"]
 [ext_resource type="Script" uid="uid://ca6tpb07fvl74" path="res://project/scripts/systems/coin_system.gd" id="6_vcukl"]
+[ext_resource type="Script" uid="uid://6qdvd1jehh6h" path="res://project/scripts/systems/currency_system.gd" id="7_yop75"]
 
 [node name="GameManager" type="Node"]
 script = ExtResource("1_wxrnf")
@@ -24,3 +25,6 @@ script = ExtResource("5_usw5k")
 
 [node name="CoinSystem" type="Node" parent="."]
 script = ExtResource("6_vcukl")
+
+[node name="CurrencySystem" type="Node" parent="."]
+script = ExtResource("7_yop75")
