@@ -60,12 +60,12 @@ func update_debt(new_debt: float):
 func gain_casino_currency(amount):
 	if amount > 0:
 		Global.casino_currency += amount
-		casino_currency_changed.emit(casino_currency)
+		Global.casino_currency_changed.emit(casino_currency)
 
 	# 消耗赌场货币
 func spend_casino_currency(amount):
 	if amount > 0 and Global.casino_currency >= amount:
 		Global.casino_currency -= amount
-		casino_currency_changed.emit(casino_currency)
+		Global.casino_currency_changed.emit(casino_currency)
 		return true  # 消耗成功
 	return false  # 消耗失败
