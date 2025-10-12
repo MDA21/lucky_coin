@@ -1,149 +1,135 @@
 extends Node
 
-#存储从JSON加载的所有硬币的定义
-var coin_data: Dictionary = {}
-#存储由道具等引起的概率调整
-var probability_modifiers: Dictionary = {}
-
-#结算完成信号，参数为最终收益（正为赢，负为亏）
-signal payout_calculated(payout_amount)
+var coin_pool: Dictionary
+var current_round: int = 1
+# 存储每个通道的硬币分布（从硬币山抽取后的实际分布）
+var channel_coin_distributions: Dictionary = {}
+# 存储每个通道的硬币集合（模拟从硬币山抽取）
+var channel_coin_collections: Dictionary = {}
 
 func _ready():
-	#将自身注册到Global，方便其他系统调用
-	Global.coin_system = self
-	#加载硬币数据
-	coin_data = _load_coin_data()
+	load_coin_config()
 
-func _load_coin_data() -> Dictionary:
-
+func load_coin_config():
 	var file = FileAccess.open("res://project/data/coin_types.json", FileAccess.READ)
-	var parsed_json = JSON.parse_string(file.get_as_text())
-	return parsed_json
+	if file:
+		coin_pool = JSON.parse_string(file.get_as_text())
+		file.close()
 
-
-# --- 概率管理 ---
-
-func set_probability_modifier(coin_id: String, multiplier: float):
-	"""
-	外部系统（如商店）调用此函数来调整特定硬币的出现概率。
-	multiplier > 1 表示增加概率, < 1 表示减少。
-	例如: multiplier = 1.1 表示增加10%的权重。
-	"""
-	probability_modifiers[coin_id] = multiplier
-
-func clear_probability_modifier(coin_id: String):
-	"""移除特定硬币的概率调整。"""
-	if probability_modifiers.has(coin_id):
-		probability_modifiers.erase(coin_id)
-
-func generate_coins(count: int) -> Array[Dictionary]:
-	"""
-	根据权重生成指定数量的硬币。
-	返回一个字典数组，每个字典包含硬币ID和具体图案。
-	e.g., [{"id": "clover_coin", "pattern": "four_leaf_clover"}, ...]
-	"""
-	var generated_coins: Array[Dictionary] = []
-	if coin_data.is_empty(): return generated_coins
-
-	#1. 计算总权重
-	var weighted_list: Array = []
-	var total_weight: float = 0.0
-	for coin_id in coin_data:
-		var coin = coin_data[coin_id]
-		var base_weight = float(coin.get("base_probability_weight", 0.0))
-		var modifier = float(probability_modifiers.get(coin_id, 1.0))
-		var adjusted_weight = base_weight * modifier
+# 第一步：从硬币山抽取硬币到通道
+func fill_channel_from_mountain(channel_id: String, coin_count: int = 100):
+	var channel_coins = []
+	var distribution = {}
+	
+	# 按照硬币山比例抽取硬币
+	for coin_type in coin_pool:
+		var percentage = coin_pool[coin_type].coin_mountain_percentage
+		var count_for_type = int(coin_count * percentage / 100.0)
 		
-		if adjusted_weight > 0:
-			total_weight += adjusted_weight
-			weighted_list.append({"id": coin_id, "weight": adjusted_weight})
-
-	if total_weight <= 0: return generated_coins
-	
-	#2. 生成硬币
-	for i in range(count):
-		var random_value = randf() * total_weight
-		for item in weighted_list:
-			random_value -= item.weight
-			if random_value <= 0:
-				var chosen_coin_id = item.id
-				var coin_info = {"id": chosen_coin_id}
-				
-				#如果硬币有图案，随机选择一个
-				var coin_def = coin_data[chosen_coin_id]
-				if coin_def.has("patterns"):
-					var patterns = coin_def.patterns
-					coin_info["pattern"] = patterns[randi() % patterns.size()]
-				
-				generated_coins.append(coin_info)
-				break
-				
-	return generated_coins
-
-# --- 结算逻辑 ---
-
-func calculate_payout(coins_in_channel: Array[Dictionary], player_multiplier: float) -> float:
-	"""
-	计算一个通道内所有硬币的总收益。
-	- coins_in_channel: `generate_coins` 生成的字典数组。
-	- player_multiplier: 玩家选择的倍率。
-	"""
-	if coin_data.is_empty(): return 0.0
-
-	var total_payout: float = 0.0
-	
-	# 1. 预处理：统计所有硬币ID和图案的数量
-	var coin_id_counts: Dictionary = {}
-	var pattern_counts: Dictionary = {} # e.g., {"clover_coin": {"weed": 5, "clover": 3}}
-
-	for coin in coins_in_channel:
-		var id = coin.id
-		coin_id_counts[id] = coin_id_counts.get(id, 0) + 1
+		for i in range(count_for_type):
+			channel_coins.append(coin_type)
 		
-		if coin.has("pattern"):
-			if not pattern_counts.has(id):
-				pattern_counts[id] = {}
-			var pattern = coin.pattern
-			pattern_counts[id][pattern] = pattern_counts[id].get(pattern, 0) + 1
-
-	# 2. 分别计算不同类型硬币的收益
-	for coin_id in coin_id_counts:
-		var coin_def = coin_data[coin_id]
-		if coin_def.get("is_direct_cash", false):
-			# A. 直接是金钱的硬币
-			total_payout += coin_id_counts[coin_id] * coin_def.base_value
-		elif coin_def.has("combo_settings"):
-			# B. 需要计算图案组合的硬币
-			total_payout += _calculate_pattern_combo_payout(coin_id, pattern_counts.get(coin_id, {}))
+		distribution[coin_type] = count_for_type
 	
-	#3. 应用玩家选择的倍率
-	total_payout *= player_multiplier
+	# 随机打乱通道内的硬币顺序
+	channel_coins.shuffle()
+	channel_coin_collections[channel_id] = channel_coins
 	
-	#4. 发出信号并返回结果
-	payout_calculated.emit(total_payout)
-	return total_payout
-
-
-#这里的奖励机制有待策划补充！！这个是三叶草币的例子
-func _calculate_pattern_combo_payout(coin_id: String, counts: Dictionary) -> float:
-	"""计算单一类型图案组合硬币的收益（例如，只计算三叶草币的部分）。"""
-	var payout: float = 0.0
-	var coin_def = coin_data[coin_id]
-	var combo_settings = coin_def.combo_settings
-	var min_combo = combo_settings.min_combo_count
-	var multiplier = combo_settings.same_type_multiplier
+	# 计算通道的实际分布概率
+	calculate_channel_distribution(channel_id)
 	
-	for i in range(coin_def.patterns.size()):
-		var pattern_name = coin_def.patterns[i]
-		var pattern_value = float(coin_def.pattern_values[i])
-		var count = counts.get(pattern_name, 0)
-		
-		var num_combos = floor(count / min_combo)
-		if num_combos > 0:
-			var combo_payout: float = 0.0
-			#使用策划案中的累进乘数算法
-			for j in range(num_combos):
-				combo_payout = (combo_payout + (min_combo * pattern_value)) * multiplier
-			payout += combo_payout
-			
-	return payout
+	return distribution
+
+# 计算通道的实际硬币分布概率
+func calculate_channel_distribution(channel_id: String):
+	var coins = channel_coin_collections.get(channel_id, [])
+	var distribution = {}
+	var total = coins.size()
+	
+	if total == 0:
+		return {}
+	
+	# 统计每种硬币的数量
+	for coin_type in coin_pool:
+		distribution[coin_type] = 0
+	
+	for coin_type in coins:
+		distribution[coin_type] = distribution.get(coin_type, 0) + 1
+	
+	# 转换为概率
+	for coin_type in distribution:
+		distribution[coin_type] = float(distribution[coin_type]) / float(total)
+	
+	channel_coin_distributions[channel_id] = distribution
+	return distribution
+
+# 第二步：从通道抽取硬币到硬币板（按通道分布概率）
+func get_coin_for_slot(channel_id: String) -> Dictionary:
+	var distribution = channel_coin_distributions.get(channel_id, {})
+	
+	if distribution.is_empty():
+		#如果通道还没有分布，先填充硬币
+		fill_channel_from_mountain(channel_id)
+		distribution = channel_coin_distributions[channel_id]
+	
+	# 按照通道的实际分布概率随机抽取
+	var rand = randf()
+	var cumulative = 0.0
+	
+	for coin_type in distribution:
+		cumulative += distribution[coin_type]
+		if rand <= cumulative:
+			return create_coin_instance(coin_type)
+	
+	# 默认返回真硬币
+	return create_coin_instance("real_coin")
+
+# 获取通道的详细分布信息（用于显示）
+func get_channel_distribution_info(channel_id: String) -> Dictionary:
+	var distribution = channel_coin_distributions.get(channel_id, {})
+	var info = {}
+	
+	for coin_type in distribution:
+		var percentage = distribution[coin_type] * 100.0
+		info[coin_type] = {
+			"name": coin_pool[coin_type].name,
+			"percentage": percentage,
+			"count": int(distribution[coin_type] * 1000)  # 基于1000个硬币的估算
+		}
+	
+	return info
+
+func create_coin_instance(coin_type: String) -> Dictionary:
+	var coin_data = coin_pool[coin_type].duplicate(true)
+	
+	if coin_data.has_two_sides:
+		var is_high_value = randf() <= coin_data.high_value_probability
+		coin_data.current_value = coin_data.high_value if is_high_value else coin_data.base_value
+		coin_data.current_texture = coin_data.high_value_texture if is_high_value else coin_data.texture
+		coin_data.is_high_value = is_high_value
+	else:
+		coin_data.current_value = coin_data.base_value
+		coin_data.current_texture = coin_data.texture
+		coin_data.is_high_value = false
+	
+	return coin_data
+
+func apply_buff_to_coin_pool(buff_type: String, value: float):
+	#这里修改硬币山的分布，影响后续新通道的抽取
+	match buff_type:
+		"real_coin_percentage":
+			coin_pool["real_coin"].coin_mountain_percentage += value
+		"pattern_coin_percentage":
+			coin_pool["sun_coin"].coin_mountain_percentage += value / 3.0
+			coin_pool["moon_coin"].coin_mountain_percentage += value / 3.0
+			coin_pool["star_coin"].coin_mountain_percentage += value / 3.0
+		"pattern_coin_high_value_prob":
+			coin_pool["sun_coin"].high_value_probability += value
+			coin_pool["moon_coin"].high_value_probability += value
+			coin_pool["star_coin"].high_value_probability += value
+		"penalty_coin_percentage":
+			coin_pool["skull_coin"].coin_mountain_percentage -= value / 2.0
+			coin_pool["blood_coin"].coin_mountain_percentage -= value / 2.0
+		"penalty_coin_high_value_prob":
+			coin_pool["skull_coin"].high_value_probability -= value
+			coin_pool["blood_coin"].high_value_probability -= value

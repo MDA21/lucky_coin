@@ -1,0 +1,29 @@
+{
+  "round_costs": {
+	"1": {
+	  "initial_cost": 2,
+	  "cost_increment": 3
+	},
+	"2": {
+	  "initial_cost": 20,
+	  "cost_increment": 15
+	},
+	"3": {
+	  "initial_cost": 45,
+	  "cost_increment": 35
+	},
+	"4": {
+	  "initial_cost": 80,
+	  "cost_increment": 55
+	},
+	"5": {
+	  "initial_cost": 100,
+	  "cost_increment": 85
+	},
+	"6": {
+	  "initial_cost": 200,
+	  "cost_increment": 100
+	}
+  },
+  "max_channels_per_round": 8
+}
