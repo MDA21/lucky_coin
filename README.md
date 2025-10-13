@@ -49,9 +49,8 @@ lucky_coin/
 │   │   ├── main_menu_view.tscn     # 主菜单视角（一级）✅
 │   │   ├── hall_view.tscn          # 大厅视角（一级）✅
 |   |   ├── bank_view.tscn          # 银行视角（一级）✅
-|   |   ├── store_view.tscn         # 银行视角（一级）✅
+|   |   ├── store_view.tscn         # 商店视角（一级）✅
 │   │   ├── slot_machine_view.tscn  # 推币机视角（二级）（待创建）
-│   │   └── channel_view.tscn       # 通道视角（三级）（待创建）（待讨论）
 │   └── systems/                    # 系统管理场景
 │       └── game_manager.tscn       # 游戏管理器 ✅ (已创建，并包含子系统节点)
 ├── scripts/                        # 脚本文件
