@@ -94,7 +94,7 @@ func get_channel_distribution_info(channel_id: String) -> Dictionary:
 		info[coin_type] = {
 			"name": coin_pool[coin_type].name,
 			"percentage": percentage,
-			"count": int(distribution[coin_type] * 1000)  # 基于1000个硬币的估算
+			"count": int(distribution[coin_type] * 100)  # 基于100个硬币的估算
 		}
 	
 	return info
