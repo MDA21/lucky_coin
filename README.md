@@ -5,7 +5,6 @@
 **Author：Ziggy Stardust**
 
 ## 更新日志
-
 **2025.10.15 泽康**
 
 导入了道具素材，将所有图片、动画进行了归类；
@@ -13,6 +12,12 @@
 完善了此文件下方的文件树；
 删除了base_view场景；
 [TODO]仍有：推币机大厅视图、推币机视图、贷款弹窗未完成，场景切换的bug未解决
+
+**2025.10.15 Ziggy**
+
+完成了图案识别脚本，硬币板脚本，更新了货币系统、压力系统、硬币
+
+
 
 **2025.10.13 泽康**
 
@@ -57,12 +62,12 @@ lucky_coin/
 │   │   ├── hud.tscn                # 游戏HUD（待创建）
 │   │   └── dialogs/                # 各种对话框（待创建）
 │   ├── views/                      # 游戏视图场景
-│   │   ├── main_menu_view.tscn     # 主菜单场景（一级）（未完成）
-│   │   ├── hall_view.tscn          # 大厅场景（一级）（未完成）
-│   │   ├── slot_machine_view.tscn  # 推币机场景（二级）（未完成）
-|   |   ├── bank_view.tscn          # 银行场景（一级）✅
-|   |   ├── store_view.tscn         # 商店场景（一级）✅
-|   |   └── exit_view.tscn          # 出口场景（一级）✅
+|   |   ├── base_view.tscn          # 一级视角基类，用于继承✅
+│   │   ├── main_menu_view.tscn     # 主菜单视角（一级）✅
+│   │   ├── hall_view.tscn          # 大厅视角（一级）✅
+|   |   ├── bank_view.tscn          # 银行视角（一级）✅
+|   |   ├── store_view.tscn         # 商店视角（一级）✅
+│   │   ├── slot_machine_view.tscn  # 推币机视角（二级）（待创建）
 │   └── systems/                    # 系统管理场景
 │       └── game_manager.tscn       # 游戏管理器 ✅ (已创建，并包含子系统节点)
 ├── scripts/                        # 脚本文件
@@ -92,10 +97,12 @@ lucky_coin/
 │       ├── channel.gd              # 通道组件 ✅
 │       └── interactive_area.gd     # 可交互区域 ✅
 ├── assets/                         # 资源文件
-│   ├── animation/					# 存放所有动画✅
-│   ├── coin/						# 存放所有硬币的正反面图片✅
-│   ├── item/						# 存放所有道具的图片✅
-│   └── photo/						# 存放所有静态场景的图片✅
+│   ├── images/
+│   │   ├── coins/                  # 硬币图片（需要创建）
+│   │   ├── ui/                     # UI图片（需要创建）
+│   │   └── backgrounds/            # 背景图片（需要创建）
+│   ├── fonts/                      # 字体文件（需要创建）
+│   └── audio/                      # 音效文件（需要创建）
 ├── data/                           # 数据文件
 │   ├── coin_types.json             # 硬币类型配置 ✅ (已更新内容)
 │   ├── shop_items.json             # 商店物品配置 ✅ (已更新内容)
