@@ -1,10 +1,200 @@
-[gd_scene load_steps=3 format=3 uid="uid://dvbts1cuamj52"]
+[gd_scene load_steps=7 format=3 uid="uid://dvbts1cuamj52"]
 
-[ext_resource type="PackedScene" uid="uid://b3pm8taf12ekg" path="res://project/scenes/views/base_view.tscn" id="1_v2ch5"]
-[ext_resource type="Script" uid="uid://bhiphes5cq6it" path="res://project/scripts/views/store_view.gd" id="2_ra4j3"]
+[ext_resource type="Texture2D" uid="uid://csni347erlk5a" path="res://project/assets/photo/shop_far.jpg" id="2_0lklm"]
+[ext_resource type="Script" uid="uid://cbnjgluou4oe2" path="res://project/scripts/views/store_view.gd" id="2_ra4j3"]
+[ext_resource type="Texture2D" uid="uid://bbcpowxvupy8n" path="res://project/assets/photo/shop_close.jpg" id="3_qjnfx"]
 
-[node name="BaseView" instance=ExtResource("1_v2ch5")]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p40v7"]
+size = Vector2(518, 571.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_jwrhw"]
+size = Vector2(90, 90)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lrheu"]
+size = Vector2(90, 90)
+
+[node name="StoreView" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("2_ra4j3")
 
-[node name="BackgroundWall" parent="." index="0"]
-color = Color(0.7647059, 0.7607843, 1, 1)
+[node name="RemoteView" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="RemoteBackground" type="Sprite2D" parent="RemoteView"]
+scale = Vector2(0.61968803, 0.512253)
+texture = ExtResource("2_0lklm")
+centered = false
+
+[node name="CloseUpArea" type="Area2D" parent="RemoteView"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RemoteView/CloseUpArea"]
+position = Vector2(678, 285)
+shape = SubResource("RectangleShape2D_p40v7")
+
+[node name="CloseUpView" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CloseUpBackground" type="Sprite2D" parent="CloseUpView"]
+scale = Vector2(0.9320389, 0.76959616)
+texture = ExtResource("3_qjnfx")
+centered = false
+
+[node name="RefreshPanel" type="Control" parent="CloseUpView"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="RefreshButton" type="Button" parent="CloseUpView/RefreshPanel"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="RefreshPriceLabel" type="Label" parent="CloseUpView/RefreshPanel"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ItemContainer" type="Control" parent="CloseUpView"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="ItemSlot1" type="Control" parent="CloseUpView/ItemContainer"]
+anchors_preset = 0
+offset_left = 497.0
+offset_top = 244.0
+offset_right = 537.0
+offset_bottom = 284.0
+
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot1"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
+[node name="PriceLabel" type="Label" parent="CloseUpView/ItemContainer/ItemSlot1"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 68.0
+
+[node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot1"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot1/ItemArea"]
+shape = SubResource("RectangleShape2D_jwrhw")
+
+[node name="ItemSlot2" type="Control" parent="CloseUpView/ItemContainer"]
+anchors_preset = 0
+offset_left = 728.0
+offset_top = 246.0
+offset_right = 768.0
+offset_bottom = 286.0
+
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot2"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
+[node name="PriceLabel" type="Label" parent="CloseUpView/ItemContainer/ItemSlot2"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 68.0
+
+[node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot2"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot2/ItemArea"]
+shape = SubResource("RectangleShape2D_jwrhw")
+
+[node name="ItemSlot3" type="Control" parent="CloseUpView/ItemContainer"]
+anchors_preset = 0
+offset_left = 957.0
+offset_top = 247.0
+offset_right = 997.0
+offset_bottom = 287.0
+
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot3"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
+[node name="PriceLabel" type="Label" parent="CloseUpView/ItemContainer/ItemSlot3"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 68.0
+
+[node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot3"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot3/ItemArea"]
+shape = SubResource("RectangleShape2D_lrheu")
+
+[node name="ItemSlot4" type="Control" parent="CloseUpView/ItemContainer"]
+anchors_preset = 0
+offset_left = 557.0
+offset_top = 407.0
+offset_right = 597.0
+offset_bottom = 447.0
+
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot4"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
+[node name="PriceLabel" type="Label" parent="CloseUpView/ItemContainer/ItemSlot4"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 68.0
+
+[node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot4"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot4/ItemArea"]
+shape = SubResource("RectangleShape2D_jwrhw")
+
+[node name="ItemSlot5" type="Control" parent="CloseUpView/ItemContainer"]
+anchors_preset = 0
+offset_left = 907.0
+offset_top = 415.0
+offset_right = 947.0
+offset_bottom = 455.0
+
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot5"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
+[node name="PriceLabel" type="Label" parent="CloseUpView/ItemContainer/ItemSlot5"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = 45.0
+offset_right = 45.0
+offset_bottom = 68.0
+
+[node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot5"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot5/ItemArea"]
+shape = SubResource("RectangleShape2D_jwrhw")

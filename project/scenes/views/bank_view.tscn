@@ -1,10 +1,55 @@
-[gd_scene load_steps=3 format=3 uid="uid://d2bdm272b0l3c"]
+[gd_scene load_steps=7 format=3 uid="uid://d2bdm272b0l3c"]
 
-[ext_resource type="PackedScene" uid="uid://b3pm8taf12ekg" path="res://project/scenes/views/base_view.tscn" id="1_0fxqf"]
+[ext_resource type="Texture2D" uid="uid://63yvunluu6sv" path="res://project/assets/photo/bank_close.jpg" id="1_y6j2e"]
 [ext_resource type="Script" uid="uid://cgd0uah2260ym" path="res://project/scripts/views/bank_view.gd" id="2_0qhuh"]
+[ext_resource type="Texture2D" uid="uid://b1sk80adjnlbq" path="res://project/assets/photo/bank_open.jpg" id="2_p1ds4"]
+[ext_resource type="Texture2D" uid="uid://dxyqa8hmblh31" path="res://project/assets/photo/bank.png" id="3_h2lk8"]
 
-[node name="BaseView" instance=ExtResource("1_0fxqf")]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_y6j2e"]
+size = Vector2(331.5, 393)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p1ds4"]
+size = Vector2(633.5, 463.25)
+
+[node name="BankView" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("2_0qhuh")
 
-[node name="BackgroundWall" parent="." index="0"]
-color = Color(1, 0.76862746, 1, 1)
+[node name="DoorView" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DoorClosedSprite" type="Sprite2D" parent="DoorView"]
+scale = Vector2(0.48813558, 0.42547607)
+texture = ExtResource("1_y6j2e")
+centered = false
+
+[node name="DoorOpenSprite" type="Sprite2D" parent="DoorView"]
+scale = Vector2(0.4881356, 0.42547604)
+texture = ExtResource("2_p1ds4")
+centered = false
+
+[node name="DoorArea" type="Area2D" parent="DoorView"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DoorView/DoorArea"]
+position = Vector2(692.25, 394.5)
+shape = SubResource("RectangleShape2D_y6j2e")
+
+[node name="BankInteriorView" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="BankBackground" type="Sprite2D" parent="BankInteriorView"]
+scale = Vector2(0.48813558, 0.42547604)
+texture = ExtResource("3_h2lk8")
+centered = false
+
+[node name="LoanArea" type="Area2D" parent="BankInteriorView"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BankInteriorView/LoanArea"]
+position = Vector2(716.25, 418.625)
+shape = SubResource("RectangleShape2D_p1ds4")

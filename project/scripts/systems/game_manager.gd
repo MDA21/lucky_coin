@@ -5,8 +5,17 @@ const VIEW_PATHS: Array[PackedScene] = [
 	preload("res://project/scenes/views/main_menu_view.tscn"),
 	preload("res://project/scenes/views/store_view.tscn"),
 	preload("res://project/scenes/views/hall_view.tscn"),
-	preload("res://project/scenes/views/bank_view.tscn")
+	preload("res://project/scenes/views/bank_view.tscn"),
+	preload("res://project/scenes/views/exit_view.tscn")
 ]
+
+# 场景索引，用于使用A键和D键切换场景
+const VIEW_MAP: Dictionary = {
+	1: [4,2], # exit  <- store ->hall
+	2: [1,3], # store <- hall  ->bank
+	3: [2,4], # hall  <- bank  ->exit
+	4: [3,1]  # bank  <- exit  ->store
+}
 
 const HUD_SCENE: PackedScene = preload("res://project/scenes/ui/hud.tscn")
 
@@ -23,7 +32,7 @@ var current_state: GameState = GameState.MAIN_MENU
 # start from scene "main_menu"
 
 #通过数组管理场景
-var current_view_index: int = 0
+var current_view_index: int = 1
 var current_view_node: Node = null
 
 #当新游戏成功开始并初始化后发出此信号
@@ -37,8 +46,6 @@ func _ready():
 	#当任何系统（如此处的债务系统）判定游戏结束时，
 	#这个管理器会监听到并做出反应。
 	Global.game_over_triggered.connect(_on_game_over)
-	
-	
 	
 func start_new_game():
 	"""
@@ -72,14 +79,22 @@ func start_new_game():
 	current_view_node = initial_view
 	
 func _input(event: InputEvent) -> void:
+	if not VIEW_MAP.has(current_view_index):
+		return
+		
+	var next_index: int = -1
+	var current_map_entry: Array = VIEW_MAP[current_view_index]
+	
 	if event.is_action_pressed("scene_left"):
-		if current_view_index > 1:
-			_change_view(current_view_index-1)
-			get_viewport().set_input_as_handled()
+		next_index = current_map_entry[0]
+		get_viewport().set_input_as_handled()
+		
 	elif event.is_action_pressed("scene_right"):
-		if current_view_index < VIEW_PATHS.size() - 1:
-			_change_view(current_view_index + 1)
-			get_viewport().set_input_as_handled()
+		next_index = current_map_entry[1]
+		get_viewport().set_input_as_handled()
+		
+	if next_index != -1:
+		_change_view(next_index)
 			
 func _change_view(new_index: int) -> void:
 	# 1. 前置检查：如果索引不变，则退出
@@ -187,3 +202,26 @@ func _load_game_config() -> Dictionary:
 	var file = FileAccess.open("res://project/data/game_config.json", FileAccess.READ)
 	var parsed_json = JSON.parse_string(file.get_as_text())
 	return parsed_json
+
+# is_game_won()函数，用于查看游戏是否胜利，从而改变场景状态
+func is_game_won() -> bool:
+	#根据金币判断是否胜利
+	return current_gold >= required_gold
+	
+# 在出口场景中调用，用于游戏胜利并返回主菜单
+func process_game_victory():
+	"""
+	当 ExitView 确认玩家胜利退出时调用此函数。
+	它会触发游戏结束流程，并返回主菜单。
+	"""
+	current_state = GameState.GAME_OVER
+	
+	# 1. 弹出最终胜利通知 (假设 Global.show_notification 已实现)
+	Global.show_notification("你成功逃离了......吗？")
+	
+	# 2. 等待通知显示完毕
+	var timer = get_tree().create_timer(4.0)
+	await timer.timeout
+	
+	# 3. 返回主菜单
+	return_to_main_menu()

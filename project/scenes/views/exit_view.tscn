@@ -1,0 +1,49 @@
+[gd_scene load_steps=6 format=3 uid="uid://70biipov3gt7"]
+
+[ext_resource type="Script" uid="uid://bdk4k3ejw7ydh" path="res://project/scripts/views/exit_view.gd" id="1_3xne4"]
+[ext_resource type="Texture2D" uid="uid://4y07sjkjddww" path="res://project/assets/photo/exit_locked_far.jpg" id="2_tnpjc"]
+[ext_resource type="Texture2D" uid="uid://ox8is7f1asm8" path="res://project/assets/photo/exit_locked_close.jpg" id="3_vskxg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_m6bqo"]
+size = Vector2(388.5, 370.5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5vvbv"]
+size = Vector2(530.5, 542)
+
+[node name="ExitView" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_3xne4")
+
+[node name="RemoteView" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="RemoteDoorSprite" type="Sprite2D" parent="RemoteView"]
+scale = Vector2(0.34511682, 0.27434373)
+texture = ExtResource("2_tnpjc")
+centered = false
+
+[node name="RemoteDoorArea" type="Area2D" parent="RemoteView"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RemoteView/RemoteDoorArea"]
+position = Vector2(580.75, 403.25)
+shape = SubResource("RectangleShape2D_m6bqo")
+
+[node name="CloseUpView" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CloseUpDoorSprite" type="Sprite2D" parent="CloseUpView"]
+scale = Vector2(0.5663717, 0.45859876)
+texture = ExtResource("3_vskxg")
+centered = false
+
+[node name="CloseUpDoorArea" type="Area2D" parent="CloseUpView"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/CloseUpDoorArea"]
+position = Vector2(572.75, 377)
+shape = SubResource("RectangleShape2D_5vvbv")

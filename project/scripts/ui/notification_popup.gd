@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-@onready var label = $Control/ColorRect/MarginContainer/Label/Label
+@onready var label = $Control/ColorRect/MarginContainer/Label
 @onready var animation_player = $Control/AnimationPlayer
 
 func show_message(message: String):
