@@ -14,7 +14,8 @@ func _ready():
 		loan_interest_rate = config.bank_system.loan_interest_rate
 
 func deposit(amount: float):
-	if Global.spend_money(amount):
+	var purpose = "deposit"
+	if Global.spend_money(amount,purpose):
 		savings += amount
 		Global.show_notification("存款成功: %s 元" % amount)
 		bank_data_updated.emit(savings)

@@ -91,7 +91,7 @@ func connect_system_signals():
 
 func load_config():
 	"""加载游戏配置"""
-	var file = FileAccess.open("res://data/game_config.json", FileAccess.READ)
+	var file = FileAccess.open("res://project/data/game_config.json", FileAccess.READ)
 	if file:
 		config = JSON.parse_string(file.get_as_text())
 		file.close()

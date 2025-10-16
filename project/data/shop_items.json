@@ -1,29 +1,191 @@
 {
-  "item_alprazolam": {
-	"name": "阿普唑仑",
-	"description": "一次性消耗品，能显著降低你的压力。",
-	"price": 30.0,
-	"type": "consumable",
-	"effect": {
-	  "action": "reduce_stress",
-	  "value": 25.0
+  "refresh_cost": {
+	"initial": 20,
+	"multiplier": 1.5
+  },
+  "free_refresh_per_round": true,
+  "items": {
+	"metal_detector": {
+	  "name": "金属探测器",
+	  "description": "显示每个通道内不同硬币的组成比例",
+	  "price": 100,
+	  "texture": "res://project/assets/shop/metal_detector.png",
+	  "effect_type": "permanent",
+	  "effect": "show_channel_distribution"
+	},
+	"sun_totem": {
+	  "name": "太阳图腾",
+	  "description": "太阳币在硬币山的比例+2%，高价值面出现概率+2.5%",
+	  "price": 150,
+	  "texture": "res://project/assets/shop/sun_totem.png",
+	  "effect_type": "permanent",
+	  "effect": "increase_pattern_coin_stats",
+	  "effect_value": {"percentage": 2.0, "high_value_prob": 2.5}
+	},
+	"rune_scroll": {
+	  "name": "符文卷轴",
+	  "description": "复杂图案（左、右、眼、日、全屏）的图案倍率+2",
+	  "price": 200,
+	  "texture": "res://project/assets/shop/rune_scroll.png",
+	  "effect_type": "permanent",
+	  "effect": "increase_complex_pattern_multiplier",
+	  "effect_value": 2
+	},
+	"cross": {
+	  "name": "十字架",
+	  "description": "骷髅币、血币占比-2%，高价值硬币出现时清零场上这两种硬币价值一次",
+	  "price": 666,
+	  "texture": "res://project/assets/shop/cross.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "reduce_penalty_coins",
+	  "effect_value": {"percentage": 2.0, "clear_effect": true}
+	},
+	"alchemy_cauldron": {
+	  "name": "炼金坩埚",
+	  "description": "基础图案所有硬币基础价值+1，稀有图案所有图形倍率+1，持续到本大回合结束",
+	  "price": 444,
+	  "texture": "res://project/assets/shop/alchemy_cauldron.png",
+	  "effect_type": "round_limited",
+	  "effect": "temporary_boost",
+	  "effect_value": {"base_value": 1, "multiplier": 1}
+	},
+	"sun_stone": {
+	  "name": "太阳符石",
+	  "description": "充能道具，每个大回合发动一次，太阳币占比+6%，高价值面概率+5%",
+	  "price": 650,
+	  "texture": "res://project/assets/shop/sun_stone.png",
+	  "effect_type": "rechargeable",
+	  "cooldown_rounds": 4,
+	  "effect": "boost_pattern_coins",
+	  "effect_value": {"percentage": 6.0, "high_value_prob": 5.0}
+	},
+	"angel_horn": {
+	  "name": "天使号角",
+	  "description": "充能道具，每个大回合发动一次，不会出现骷髅币和血币",
+	  "price": 650,
+	  "texture": "res://project/assets/shop/angel_horn.png",
+	  "effect_type": "rechargeable",
+	  "cooldown_rounds": 4,
+	  "effect": "block_penalty_coins"
+	},
+	"gilding_tech": {
+	  "name": "镀金技术",
+	  "description": "真硬币价值x2",
+	  "price": 500,
+	  "texture": "res://project/assets/shop/gilding_tech.png",
+	  "effect_type": "permanent",
+	  "effect": "double_real_coin_value"
+	},
+	"vein_map": {
+	  "name": "矿脉地图",
+	  "description": "真硬币在硬币山的比例+5%",
+	  "price": 999,
+	  "texture": "res://project/assets/shop/vein_map.png",
+	  "effect_type": "permanent",
+	  "effect": "increase_real_coin_percentage",
+	  "effect_value": 5.0
+	},
+	"talisman": {
+	  "name": "护身符",
+	  "description": "限次道具，二次筛选时有33%概率触发幸运值+5，最多触发8次",
+	  "price": 600,
+	  "texture": "res://project/assets/shop/talisman.png",
+	  "effect_type": "limited_use",
+	  "max_uses": 8,
+	  "effect": "increase_luck",
+	  "effect_value": {"probability": 0.33, "luck_bonus": 5}
+	},
+	"abyss_eye": {
+	  "name": "深渊之眼",
+	  "description": "限次道具，小回合结束后有20%概率触发额外小回合，最多触发3次",
+	  "price": 450,
+	  "texture": "res://project/assets/shop/abyss_eye.png",
+	  "effect_type": "limited_use",
+	  "max_uses": 3,
+	  "effect": "extra_sub_round",
+	  "effect_value": {"probability": 0.20}
+	},
+	"aed": {
+	  "name": "AED",
+	  "description": "一次性道具，压力值满后归零",
+	  "price": 300,
+	  "texture": "res://project/assets/shop/aed.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "reset_stress"
+	},
+	"premium_certificate": {
+	  "name": "优质客户凭证",
+	  "description": "一次性道具，可以进行一次无息贷款",
+	  "price": 250,
+	  "texture": "res://project/assets/shop/premium_certificate.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "interest_free_loan"
+	},
+	"free_refresh_coupon": {
+	  "name": "免费刷新券",
+	  "description": "免费刷新一次商店",
+	  "price": 0,
+	  "texture": "res://project/assets/shop/refresh_coupon.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "free_refresh"
+	},
+	"digital_totem": {
+	  "name": "数字图腾",
+	  "description": "三四五连的图案倍率+0.5",
+	  "price": 350,
+	  "texture": "res://project/assets/shop/digital_totem.png",
+	  "effect_type": "permanent",
+	  "effect": "increase_basic_pattern_multiplier",
+	  "effect_value": 0.5
+	},
+	"alprazolam": {
+	  "name": "阿普唑仑",
+	  "description": "一次性道具，立刻减少30压力值",
+	  "price": 300,
+	  "texture": "res://project/assets/shop/alprazolam.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "reduce_stress",
+	  "effect_value": 30
+	},
+	"cigarette": {
+	  "name": "香烟",
+	  "description": "一次性道具，立刻减少10压力值",
+	  "price": 200,
+	  "texture": "res://project/assets/shop/cigarette.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "reduce_stress",
+	  "effect_value": 10
+	},
+	"lockpick": {
+	  "name": "开锁器",
+	  "description": "一次性道具，免费解锁一次通道",
+	  "price": 0,
+	  "texture": "res://project/assets/shop/lockpick.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "free_channel_unlock"
+	},
+	"originium_tech": {
+	  "name": "源石科技",
+	  "description": "一次性道具，所有充能道具立刻准备就绪",
+	  "price": 666,
+	  "texture": "res://project/assets/shop/originium_tech.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "recharge_all_items"
 	}
   },
-  "item_clover_bracelet": {
-	"name": "三叶草手链",
-	"description": "被动道具，略微增加三叶草币在推币机中出现的概率。",
-	"price": 100.0,
-	"type": "passive",
-	"effect": {
-	  "action": "increase_clover_chance",
-	  "value": 0.05
-	}
-  },
-  "item_divine_sense": {
-	"name": "神识",
-	"description": "主动技能，使用后可以预先查看一个通道的硬币构成。剩余2次。",
-	"price": 75.0,
-	"type": "active_skill",
-	"uses": 2
+  "item_categories": {
+	"permanent": ["metal_detector", "sun_totem", "rune_scroll", "gilding_tech", "vein_map", "digital_totem"],
+	"consumable": ["cross", "aed", "premium_certificate", "free_refresh_coupon", "alprazolam", "cigarette", "lockpick", "originium_tech"],
+	"rechargeable": ["sun_stone", "angel_horn"],
+	"round_limited": ["alchemy_cauldron"],
+	"limited_use": ["talisman", "abyss_eye"]
   }
 }

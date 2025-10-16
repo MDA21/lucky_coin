@@ -5,6 +5,10 @@
 **Author：Ziggy Stardust**
 
 ## 更新日志
+**2025.10.15 Ziggy**
+
+重构了债务系统、银行系统、商店系统，配置了对应的数据文件，仍然存在bug，稍后修
+
 **2025.10.15 泽康**
 
 导入了道具素材，将所有图片、动画进行了归类；<br>
@@ -16,9 +20,7 @@
 
 **2025.10.15 Ziggy**
 
-完成了图案识别脚本，硬币板脚本，更新了货币系统、压力系统、硬币
-
-
+完成了图案识别脚本，硬币板脚本，更新了货币系统、压力系统、硬币系统
 
 **2025.10.13 泽康**
 
@@ -127,285 +129,166 @@ lucky_coin/
 
 
 
-## 初始项目结构时的节点类型选择和脚本继承
-
-### 节点类型
-
-在Godot中新建节点通常会要求用户在“2D场景”、“3D场景”、“用户界面”、“Node”......中进行选择，以下是我在创建框架时节点的类型配置，后续大家在创建时也请注意类型，避免后续重构的麻烦。
-
-```
-scenes/
-├── ui/                           # 全部选择"用户界面"
-│   ├── main_ui.tscn             → 用户界面
-│   ├── hud.tscn                 → 用户界面
-│   └── dialogs/                 → 用户界面
-├── views/                       # 全部选择"2D场景"
-│   ├── hall_view.tscn           → 2D场景
-│   ├── slot_machine_view.tscn   → 2D场景
-│   └── channel_view.tscn        → 2D场景
-└── systems/                     # 选择"Node"
-	└── game_manager.tscn        → Node
-
-autoload/                       # 选择"Node"
-	├── global.gd               → Node
-	└── audio_manager.gd        → Node
-```
-
-### 脚本继承
-
-#### **系统管理类脚本 → Node**
-
-```
-scripts/systems/
-├── game_manager.gd         → extends Node
-├── coin_system.gd          → extends Node
-├── debt_system.gd          → extends Node
-├── stress_system.gd        → extends Node
-├── currency_system.gd      → extends Node
-├── shop_system.gd          → extends Node
-├── bank_system.gd          → extends Node
-└── event_system.gd         → extends Node
-```
-
-**原因**：纯逻辑，不需要2D变换或UI功能
-
-#### **视图控制类脚本 → Node2D**
-
-```
-scripts/views/
-├── hall_view.gd            → extends Node2D
-├── slot_machine_view.gd    → extends Node2D
-└── channel_view.gd         → extends Node2D
-```
-
-**原因**：控制2D场景，需要位置、旋转、缩放等2D功能
-
-
-
-#### **UI控制类脚本 → Control**
-
-```
-scripts/ui/
-├── main_ui.gd              → extends Control
-└── hud.gd                  → extends Control
-```
-
-**原因**：控制UI元素，需要锚点、布局、主题等UI功能
-
-
-
-#### **组件脚本 → 根据功能选择**
-
-```
-scripts/components/
-├── coin.gd                 → extends Node2D
-├── channel.gd              → extends Node2D
-└── interactive_area.gd     → extends Area2D (交互区域)
-```
-
-如果要修改，直接在脚本第一行修改即可。
-
-
-
-## 杂项
-
-由于我个人的开发习惯，我将场景`.tscn`与脚本`.gd`分开存放在不同文件夹中避免同名混淆以及美观。因此需要指定两者之间的依赖关系，方法也很简单：
-
-1. 创建 `hall_view.tscn`，根节点选择 `Node2D`（在初始结构中已经完成）
-2. 右键选中根节点，点击"添加脚本"
-3. 选择 `hall_view.gd` 文件路径，选择现有的，新建的话，脚本统一存放在`script\`下
-4. Godot会自动设置 `extends Node2D`
-
-
-
-基于项目框架，我来详细说明每个脚本和场景需要完成的具体功能：
-
-## 核心系统脚本
-
-### **scripts/systems/game_manager.gd**
-
-- 游戏总控制器，协调所有系统
-- 管理游戏状态（开始、进行中、结束）
-- 处理场景切换和视图层级管理
-- 初始化所有子系统
-- 保存/加载游戏进度
-
-### **scripts/systems/coin_system.gd**
-
-- 管理硬币池和硬币生成概率
-- 实现硬币类型配置加载（从JSON）
-- 处理硬币的组合算法（三叶草、柠檬、樱桃等图案组合）
-- 计算硬币结算收益
-- 根据道具效果调整硬币概率
-
-### **scripts/systems/debt_system.gd**
-
-- 跟踪玩家债务状态
-- 管理每个大回合的强制偿还目标
-- 检查玩家流动资产是否足够偿还债务
-- 处理债务相关的debuff效果
-- 实现债务结算逻辑
-
-### **scripts/systems/stress_system.gd**
-
-- 管理玩家压力值
-- 实现压力增加/减少的计算公式
-- 处理高压状态的特殊效果（幻觉界面、恐怖元素）
-- 实现暴怒状态的惩罚机制
-- 管理压力恢复机制
-
-### **scripts/systems/currency_system.gd**
-
-- 管理两种货币（常规货币$、赌场货币）
-- 处理货币的获取和消耗
-- 验证货币交易的有效性
-- 实现货币转换逻辑
-
-### **scripts/systems/shop_system.gd**
-
-- 管理商店物品和库存
-- 处理道具购买逻辑
-- 实现道具效果应用
-- 管理道具冷却和使用次数
-- 处理商店刷新机制
-
-### **scripts/systems/bank_system.gd**
-
-- 管理存款和贷款功能
-- 计算存款利息和贷款利息
-- 处理猫猫币的买入、抛售和价值波动
-- 实现强制扣款逻辑
-- 管理金融资产状态
-
-### **scripts/systems/event_system.gd**
-
-- 管理随机事件触发
-- 实现事件效果应用
-- 处理事件选择界面
-- 管理事件冷却和触发条件
-
-## 视图控制脚本
-
-### **scripts/views/hall_view.gd**
-
-- 处理大厅视角的点击交互
-- 管理墙面裂缝等可点击区域的检测
-- 实现视角拉近/拉远效果
-- 处理视角切换到大推币机
-- 渲染大厅背景和压迫感视觉效果
-
-### **scripts/views/slot_machine_view.gd**
-
-- 管理推币机操作界面
-- 处理通道解锁逻辑和费用计算
-- 实现拉杆拉动动画和硬币灌注
-- 管理倍率选择界面
-- 处理退出到大厅的逻辑
-
-### **scripts/views/channel_view.gd**
-
-- 显示通道内硬币的排列
-- 实现硬币堆的视觉表现（第一次拉杆后模糊，第二次清晰）
-- 处理通道观察的交互
-- 管理多个通道的切换查看
-
-## UI控制脚本
-
-### **scripts/ui/main_ui.gd**
-
-- 管理主UI界面的布局
-- 处理菜单按钮交互
-- 实现设置界面
-- 管理游戏暂停功能
-
-### **scripts/ui/hud.gd**
-
-- 显示玩家状态信息（金钱、压力、债务）
-- 更新实时数据展示
-- 管理通知和提示信息
-- 处理HUD元素的动画效果
-
-## 组件脚本
-
-### **scripts/components/coin.gd**
-
-- 定义硬币的基类行为
-- 管理硬币的视觉表现（纹理、动画）
-- 实现硬币类型特定的逻辑
-- 处理硬币的交互检测
-
-### **scripts/components/channel.gd**
-
-- 管理单个通道的状态
-- 处理通道内硬币的排列
-- 实现通道结算逻辑
-- 管理通道解锁状态
-
-### **scripts/components/interactive_area.gd**
-
-- 定义可交互区域的基础功能
-- 处理鼠标悬停和点击事件
-- 管理交互反馈效果
-- 提供通用的交互接口
-
-## 自动加载脚本
-
-### **autoload/global.gd**
-
-- 提供全局变量和常量
-- 实现通用的工具函数
-- 管理游戏配置数据
-- 提供跨场景的数据传递
-
-### **autoload/audio_manager.gd**
-
-- 管理背景音乐播放
-- 处理音效触发和播放
-- 实现音频设置（音量控制）
-- 管理音频资源加载
-
-## 场景节点功能
-
-### **scenes/views/hall_view.tscn**
-
-- 渲染大厅背景和墙面
-- 包含推币机、商店、银行等交互区域
-- 实现视角切换的Camera2D
-- 提供墙面裂缝等细节交互点
-
-### **scenes/views/slot_machine_view.tscn**
-
-- 推币机主体视觉表现
-- 硬币山视觉效果（无边界、巨物感）
-- 通道容器和单个通道UI
-- 拉杆、按钮等交互元素
-- 出币口视觉效果
-
-### **scenes/views/channel_view.tscn**
-
-- 通道内部硬币排列显示
-- 多个通道的切换界面
-- 硬币堆的视觉层次
-- 观察模式的UI元素
-
-### **scenes/ui/main_ui.tscn**
-
-- 主菜单界面布局
-- 开始游戏、设置、退出等按钮
-- 标题和背景元素
-
-### **scenes/ui/hud.tscn**
-
-- 状态信息显示面板
-- 货币数量显示
-- 压力值进度条
-- 债务信息面板
-
-### **scenes/systems/game_manager.tscn**
-
-- 系统管理器的容器节点
-- 各个子系统的组织结构
-- 全局状态管理节点
+- ## 已完成的核心系统功能与责任
+
+  ### ✅ 已完成的系统
+
+  #### 1. **GameManager** (`scripts/systems/game_manager.gd`)
+  - **责任**: 游戏总控制器，协调所有子系统
+  - **功能**: 
+    - 初始化所有子系统
+    - 管理游戏状态（开始、进行中、结束）
+    - 提供系统获取接口
+    - 场景切换和视图管理
+
+  #### 2. **CoinSystem** (`scripts/systems/coin_system.gd`)
+  - **责任**: 硬币生成和概率管理
+  - **功能**:
+    - 管理硬币山分布（6种硬币类型）
+    - 实现条件概率：硬币山 → 通道 → 硬币板
+    - 处理硬币两面性和高价值概率
+    - 应用增益效果到硬币分布
+
+  #### 3. **ChannelSystem** (`scripts/systems/channel_system.gd`)
+  - **责任**: 通道解锁和管理
+  - **功能**:
+    - 管理递增解锁费用
+    - 处理通道的解锁、抛弃状态
+    - 与硬币系统集成填充通道
+
+  #### 4. **PatternSystem** (`scripts/systems/pattern_system.gd`)
+  - **责任**: 图案识别和检测
+  - **功能**:
+    - 检测11种图案组合
+    - 实现排除规则（基础图案算大不算小）
+    - 提供图案数据查询
+
+  #### 5. **ComboCalculator** (`scripts/systems/combo_calculator.gd`)
+  - **责任**: 收益和压力结算计算
+  - **功能**:
+    - 计算单个/多个通道的结算结果
+    - 应用特殊规则（血币+骷髅币惩罚）
+    - 分离真硬币收益和图案收益
+
+  #### 6. **CurrencySystem** (`scripts/systems/currency_system.gd`)
+  - **责任**: 货币管理和区分
+  - **功能**:
+    - 区分贷款币和普通币
+    - 管理货币来源和消费策略
+    - 银行存储限制（贷款币不能存）
+    - 统一的货币交易接口
+
+  #### 7. **StressSystem** (`scripts/systems/stress_system.gd`)
+  - **责任**: 压力值管理和视觉效果
+  - **功能**:
+    - 压力值计算和限制
+    - 压力触发条件实现
+    - 视觉效果（扭曲、滤镜）
+    - 贷款压力管理
+
+  #### 8. **BankSystem** (`scripts/systems/bank_system.gd`)
+  - **责任**: 银行和贷款管理
+  - **功能**:
+    - 存款利息计算
+    - 短期/长期贷款管理
+    - 还款计划和压力减少
+    - 贷款违约处理
+
+  #### 9. **Global** (`autoload/global.gd`)
+  - **责任**: 全局接口和信号中心
+  - **功能**:
+    - 系统引用缓存和转发
+    - 全局信号中心
+    - 便捷方法提供
+    - 游戏状态管理
+
+  ### ⏳ 待更新/创建的系统
+
+  #### 1. **DebtSystem** (`scripts/systems/debt_system.gd`)
+  - **责任**: 债务目标管理和检查
+  - **待完成**:
+    - 实现6个大回合债务目标
+    - 集成新货币系统检查偿还能力
+    - 债务结算和游戏结束条件
+
+  #### 2. **ShopSystem** (`scripts/systems/shop_system.gd`)
+  - **责任**: 商店道具管理和效果
+  - **待完成**:
+    - 更新道具效果匹配新系统
+    - 实现刷新机制（初始20\$，×1.5递增）
+    - 道具分类管理（永久、充能、限次、一次性）
+
+  #### 3. **EventSystem** (`scripts/systems/event_system.gd`)
+  - **责任**: 随机增益事件管理
+  - **待完成**:
+    - 实现5个增益选择（3选1）
+    - 增益分类实现（图案概率、价值、压力、银行、道具）
+    - 增益效果应用
+
+  #### 4. **UI系统** (`scripts/ui/`)
+  - **责任**: 用户界面和HUD
+  - **待完成**:
+    - 主UI界面 (`main_ui.gd`)
+    - HUD控制 (`hud.gd`)
+    - 货币区分显示
+    - 压力视觉效果集成
+
+  ## 剩余工作优先级
+
+  ### 🔴 高优先级（核心游戏循环）
+
+  1. **更新债务系统** - 实现回合债务目标
+  2. **更新商店系统** - 适配新道具效果
+  3. **创建事件系统** - 随机增益机制
+  4. **主UI/HUD** - 游戏状态显示
+
+  ### 🟡 中优先级（游戏流程）
+
+  5. **回合管理系统** - 6大回合×4小回合流程
+  6. **推币机流程完善** - 倍率选择、通道观察
+  7. **资源创建** - 硬币纹理、UI素材
+
+  ### 🟢 低优先级（完善功能）
+
+  8. **音频系统** - 音效和背景音乐
+  9. **保存/加载系统** - 游戏进度管理
+  10. **优化和调试** - 平衡性和性能
+
+  ## 系统依赖关系
+
+  ```
+  GameManager (协调中心)
+      ├── CoinSystem (硬币生成)
+      │   └── 被: ChannelSystem, PatternGrid 调用
+      ├── ChannelSystem (通道管理) 
+      │   └── 被: SlotMachineView 调用
+      ├── PatternSystem (图案识别)
+      │   └── 被: ComboCalculator 调用
+      ├── ComboCalculator (收益计算)
+      │   ├── 依赖: PatternSystem, StressSystem
+      │   └── 被: SlotMachineView 调用
+      ├── CurrencySystem (货币管理)
+      │   └── 被: 所有经济相关系统调用
+      ├── StressSystem (压力管理)
+      │   └── 被: ComboCalculator, BankSystem 调用
+      ├── BankSystem (银行系统)
+      │   ├── 依赖: CurrencySystem, StressSystem
+      │   └── 被: BankView 调用
+      ├── DebtSystem (债务系统) [待更新]
+      ├── ShopSystem (商店系统) [待更新]
+      └── EventSystem (事件系统) [待创建]
+  ```
+
+  ## 下一步建议
+
+  建议按以下顺序完成剩余工作：
+
+  1. **先完成债务系统更新** - 这是游戏进度控制的核心
+  2. **然后更新商店系统** - 提供玩家成长路径  
+  3. **创建事件系统** - 增加游戏随机性和重玩价值
+  4. **最后完善UI系统** - 提供完整的用户体验
+
+  每个系统完成后都可以进行独立测试，确保核心机制正确后再进行集成。
 
 ## 数据文件内容
 

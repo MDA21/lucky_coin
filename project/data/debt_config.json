@@ -1,7 +1,24 @@
 {
-  "initial_debt": {
-	"amount": 500.0,
-	"rounds_due": 10,
-	"description": "最初的债务"
+  "debt_targets": {
+	"1": 66,
+	"2": 200,
+	"3": 666,
+	"4": 2222,
+	"5": 6666,
+	"6": 14444
+  },
+  "round_structure": {
+	"major_rounds": 6,
+	"sub_rounds_per_major": 4
+  },
+  "penalties": {
+	"cannot_repay_stress_increase": 50,
+	"round_loss_stress_increase": 20,
+	"round_profit_stress_decrease": 10
+  },
+  "game_over_conditions": {
+	"debt_default": true,
+	"stress_max": true,
+	"max_rounds": 6
   }
 }

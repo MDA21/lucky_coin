@@ -1,0 +1,190 @@
+{
+  "event_selection": {
+	"choices_per_round": 3,
+	"max_events_per_game": 5
+  },
+  "events": {
+	"pattern_probability": {
+	  "play_for_real": {
+		"name": "要玩就来真的",
+		"description": "真硬币在硬币山中的含量永久+2.5%或-2.5%",
+		"type": "pattern_probability",
+		"effect": "change_coin_percentage",
+		"effect_target": "real_coin",
+		"effect_value": 2.5,
+		"can_be_negative": true
+	  },
+	  "no_faith_no_gamble": {
+		"name": "信仰不够，就别来赌",
+		"description": "太阳/星星/月亮图案在硬币山中的含量永久+2.5%或-2.5%",
+		"type": "pattern_probability", 
+		"effect": "change_coin_percentage",
+		"effect_target": "pattern_coins",
+		"effect_value": 2.5,
+		"can_be_negative": true
+	  },
+	  "quality_over_quantity": {
+		"name": "在精不在多",
+		"description": "太阳/星星/月亮在硬币板上出现额外价值面的概率永久+5%",
+		"type": "pattern_probability",
+		"effect": "change_high_value_probability",
+		"effect_target": "pattern_coins",
+		"effect_value": 5.0
+	  },
+	  "no_retreat": {
+		"name": "不退即进", 
+		"description": "骷髅/血币在硬币山中的含量永久-1.25%",
+		"type": "pattern_probability",
+		"effect": "change_coin_percentage",
+		"effect_target": "penalty_coins",
+		"effect_value": -1.25
+	  },
+	  "coward": {
+		"name": "胆小鬼",
+		"description": "骷髅/血币在硬币板上出现额外价值面的概率永久-2.5%",
+		"type": "pattern_probability",
+		"effect": "change_high_value_probability",
+		"effect_target": "penalty_coins", 
+		"effect_value": -2.5
+	  },
+	  "greedy_snake": {
+		"name": "贪吃蛇！",
+		"description": "三连、四连、五连的图案倍率额外+0.5",
+		"type": "pattern_probability",
+		"effect": "increase_basic_pattern_multiplier",
+		"effect_value": 0.5
+	  }
+	},
+	"value": {
+	  "silver_age": {
+		"name": "银币时代",
+		"description": "每个真硬币的价值x2",
+		"type": "value",
+		"effect": "multiply_coin_value",
+		"effect_target": "real_coin",
+		"effect_value": 2.0
+	  },
+	  "good_foundation": {
+		"name": "打好基础", 
+		"description": "太阳/星星/月亮的普通价值面价值x1.5",
+		"type": "value",
+		"effect": "multiply_coin_base_value",
+		"effect_target": "pattern_coins",
+		"effect_value": 1.5
+	  },
+	  "greed_virtue": {
+		"name": "贪婪美德",
+		"description": "太阳/星星/月亮的高价值面价值x1.5", 
+		"type": "value",
+		"effect": "multiply_coin_high_value",
+		"effect_target": "pattern_coins",
+		"effect_value": 1.5
+	  },
+	  "no_problem": {
+		"name": "来再多也没关系",
+		"description": "骷髅/血币的普通价值面价值x0.5",
+		"type": "value",
+		"effect": "multiply_coin_base_value",
+		"effect_target": "penalty_coins",
+		"effect_value": 0.5
+	  },
+	  "just_in_case": {
+		"name": "以防万一",
+		"description": "骷髅/血币的高价值面价值x0.5",
+		"type": "value", 
+		"effect": "multiply_coin_high_value",
+		"effect_target": "penalty_coins",
+		"effect_value": 0.5
+	  }
+	},
+	"stress": {
+	  "pressure_resistant": {
+		"name": "抗压体质",
+		"description": "你的最大压力值增加25点",
+		"type": "stress",
+		"effect": "increase_max_stress",
+		"effect_value": 25
+	  },
+	  "psychological_expectation": {
+		"name": "心理预期", 
+		"description": "推币机给你带来的压力增长值变为原来的0.75倍",
+		"type": "stress",
+		"effect": "reduce_stress_growth",
+		"effect_value": 0.75
+	  },
+	  "chief_physician": {
+		"name": "主任医师",
+		"description": "使用精神类药物减少压力时效果变为原来的1.5倍",
+		"type": "stress",
+		"effect": "boost_stress_reduction_items",
+		"effect_value": 1.5
+	  },
+	  "understanding_loan_manager": {
+		"name": "善解人意的贷款经理", 
+		"description": "贷款增加的压力值变为原来的0.6倍",
+		"type": "stress",
+		"effect": "reduce_loan_stress",
+		"effect_value": 0.6
+	  },
+	  "optimist": {
+		"name": "乐天派？",
+		"description": "图形combo减少的压力值变为原来的1.5倍",
+		"type": "stress",
+		"effect": "boost_pattern_stress_reduction",
+		"effect_value": 1.5
+	  }
+	},
+	"bank": {
+	  "tight_monetary_policy": {
+		"name": "紧缩的货币政策",
+		"description": "银行存款利率+4.5%",
+		"type": "bank", 
+		"effect": "increase_savings_interest",
+		"effect_value": 0.045
+	  },
+	  "expansionary_monetary_policy": {
+		"name": "扩张的货币政策",
+		"description": "银行长期贷款利率变为原来的0.65倍，短期贷款利率变为0.5倍",
+		"type": "bank",
+		"effect": "reduce_loan_interest",
+		"effect_value": {"long_term": 0.65, "short_term": 0.5}
+	  },
+	  "flexible_loan_policy": {
+		"name": "灵活投贷政策",
+		"description": "现在长期贷款可贷金额增加350元、550元和7500元档位，最长可分9期还贷（利率0.145）",
+		"type": "bank",
+		"effect": "expand_loan_options"
+	  },
+	  "flexible_repayment_policy": {
+		"name": "灵活还贷政策", 
+		"description": "新增长期贷款还贷方式：到期一次性还本付息",
+		"type": "bank",
+		"effect": "add_repayment_option"
+	  }
+	},
+	"items": {
+	  "promotion": {
+		"name": "促销",
+		"description": "商店道具有概率出现折扣商品（1折-9折）",
+		"type": "items",
+		"effect": "shop_discounts",
+		"effect_value": {"probability": 0.3, "min_discount": 0.1, "max_discount": 0.9}
+	  },
+	  "regular_customer": {
+		"name": "熟客",
+		"description": "刷新道具花费变为原来的0.65倍",
+		"type": "items",
+		"effect": "reduce_refresh_cost",
+		"effect_value": 0.65
+	  },
+	  "friends_with_slot_machine": {
+		"name": "和推币机成为朋友", 
+		"description": "通道解锁花费变为原来的0.65倍",
+		"type": "items",
+		"effect": "reduce_channel_cost",
+		"effect_value": 0.65
+	  }
+	}
+  },
+  "event_categories": ["pattern_probability", "value", "stress", "bank", "items"]
+}
