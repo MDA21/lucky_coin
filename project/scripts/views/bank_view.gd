@@ -16,9 +16,10 @@ const STATE_INTERIOR = 2  # 银行内部 (第二次点击后)
 
 # --- 状态变量 ---
 var current_bank_state: int = STATE_CLOSED
-# 【TODO】加载 LoanView 场景，在你创建 LoanView.tscn 后取消注释
-# @onready var loan_view_scene: PackedScene = preload("res://project/scenes/ui/LoanView.tscn") 
-# @onready var game_manager = get_node("/root/GameManager")
+var current_loan_popup: CanvasLayer = null # 【新增】用于保存弹窗实例的引用
+# 加载 LoanView 场景
+@onready var loan_view_scene: PackedScene = preload("res://project/scenes/views/loan_view.tscn") 
+@onready var game_manager = get_node("/root/GameManager") # 假设 GameManager 是单例
 
 # --- 核心逻辑：状态切换 ---
 
@@ -53,6 +54,39 @@ func _set_view_state(new_state: int):
 		_:
 			pass # 保持当前状态不变
 
+# --- 弹窗管理函数 (新增) ---
+
+func _show_loan_view():
+	"""
+	实例化并显示 LoanView 弹窗。
+	"""
+	if is_instance_valid(current_loan_popup):
+		return # 防止重复创建弹窗
+
+	var loan_popup_instance = loan_view_scene.instantiate()
+	# 确保 LoanView 脚本已定义 loan_view_closed 信号
+	if not loan_popup_instance.has_signal("loan_view_closed"):
+		push_error("LoanView 脚本未定义 'loan_view_closed' 信号!")
+		return
+		
+	current_loan_popup = loan_popup_instance
+	
+	# 将弹窗添加到场景树的根节点，确保在最顶层渲染
+	get_tree().root.add_child(loan_popup_instance)
+	
+	# 连接弹窗发出的关闭信号
+	loan_popup_instance.loan_view_closed.connect(_on_loan_view_closed)
+	
+func _on_loan_view_closed():
+	"""
+	响应 LoanView 发出的关闭信号，销毁弹窗实例。
+	"""
+	if is_instance_valid(current_loan_popup):
+		# 销毁弹窗，释放内存
+		current_loan_popup.queue_free()
+		current_loan_popup = null
+
+
 # --- 初始化 ---
 
 func _ready():
@@ -72,6 +106,11 @@ func _on_door_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: i
 	"""
 	# 仅处理鼠标左键按下事件
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+		return
+		
+	# 如果弹窗正在显示，阻止门区域的交互
+	if is_instance_valid(current_loan_popup):
+		get_viewport().set_input_as_handled()
 		return
 		
 	match current_bank_state:
@@ -98,10 +137,12 @@ func _on_loan_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: i
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
 		return
 		
-	if current_bank_state == STATE_INTERIOR:
-		# 【TODO】实例化 LoanView 并显示
-		# _show_loan_view() 
+	# 如果弹窗正在显示，阻止重复显示
+	if is_instance_valid(current_loan_popup):
+		get_viewport().set_input_as_handled()
+		return
 		
-		# 暂时显示一个调试信息，直到 LoanView 完成
-		print("DEBUG: 弹出 LoanView 弹窗")
+	if current_bank_state == STATE_INTERIOR:
+		# 实例化 LoanView 并显示
+		_show_loan_view() 
 		get_viewport().set_input_as_handled()

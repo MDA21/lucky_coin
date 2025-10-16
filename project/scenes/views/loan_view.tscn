@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3 uid="uid://byp5g7x8v4qps"]
+
+[ext_resource type="Script" uid="uid://d11ud2x084i0d" path="res://project/scripts/views/loan_view.gd" id="1_0rvp1"]
+
+[node name="LoanView" type="CanvasLayer"]
+script = ExtResource("1_0rvp1")
+
+[node name="BackgroundPanel" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -351.5
+offset_top = -101.0
+offset_right = 351.5
+offset_bottom = 101.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="BackgroundPanel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="BackgroundPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="OptionalContainer" type="HBoxContainer" parent="BackgroundPanel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="OptionalLabel1" type="Label" parent="BackgroundPanel/MarginContainer/VBoxContainer/OptionalContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OptionalLabel2" type="Label" parent="BackgroundPanel/MarginContainer/VBoxContainer/OptionalContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OptionalLabel3" type="Label" parent="BackgroundPanel/MarginContainer/VBoxContainer/OptionalContainer"]
+custom_minimum_size = Vector2(0, 70)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ButtonContainer" type="HBoxContainer" parent="BackgroundPanel/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="Button1" type="Button" parent="BackgroundPanel/MarginContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "贷款"
+
+[node name="Button2" type="Button" parent="BackgroundPanel/MarginContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "贷款"
+
+[node name="Button3" type="Button" parent="BackgroundPanel/MarginContainer/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "贷款"
