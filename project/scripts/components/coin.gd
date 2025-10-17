@@ -1,124 +1,163 @@
-extends Node2D
-class_name Coin
+extends RigidBody2D
 
-# 硬币类型枚举
-enum CoinType {
-	REAL,           # 真硬币
-	CLOVER,         # 三叶草币
-	LEMON,          # 柠檬币
-	CHERRY,         # 樱桃币
-	CAT             # 猫猫币
-}
+@export var coin_data: Dictionary = {}
 
-#硬币属性
-var coin_type: CoinType
-var coin_value: float = 0.0
-var pattern_level: int = 1
-var texture_path: String = ""
-var is_visible: bool = true
+# 节点引用
+@onready var sprite_2d: Sprite2D = $Sprite2D
+@onready var collision_shape_2d: CollisionShape2D = $CollisionShape2D
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
-#节点引用
-@onready var sprite: Sprite2D = $Sprite2D
-@onready var collision_shape: CollisionShape2D = $CollisionShape2D
+# 硬币状态
+var is_high_value: bool = false
+var current_value: int = 0
+var coin_type: String = ""
+var is_active: bool = true
+var has_landed: bool = false
+
+# 物理参数
+@export var coin_gravity_scale: float = 1.0
+@export var coin_linear_damp: float = 0.1
+@export var coin_angular_damp: float = 0.1
 
 func _ready():
-	# 连接 Area2D 的信号
-	connect("mouse_entered", _on_mouse_entered)
-	connect("mouse_exited", _on_mouse_exited)
-	connect("input_event", _on_input_event)
+	setup_physics()
+	setup_coin()
+	create_base_animations()
+
+func setup_physics():
+	gravity_scale = coin_gravity_scale
+	linear_damp = coin_linear_damp
+	angular_damp = coin_angular_damp
+	collision_layer = 2
+	collision_mask = 1
+
+func setup_coin():
+	if coin_data.is_empty():
+		return
 	
-	setup_visuals()
-
-#初始化硬币
-func setup(type: CoinType, pattern: int = 1):
-	coin_type = type
-	pattern_level = pattern
-	load_coin_config()
-	setup_visuals()
-
-#配置文件加载硬币属性
-func load_coin_config():
-	var config_path = "res://project/data/coin_types.json"
-	var file = FileAccess.open(config_path, FileAccess.READ)
+	coin_type = coin_data.get("name", "unknown")
+	current_value = coin_data.get("current_value", 0)
+	is_high_value = coin_data.get("is_high_value", false)
 	
+	load_and_set_texture()
+	setup_collision_shape()
+	setup_special_effects()
 
-	var json_text = file.get_as_text()
-	var json = JSON.new()
-	var error = json.parse(json_text)
-		
-
-	var coin_data = json.data
-	match coin_type:
-		CoinType.REAL:
-			var real_data = coin_data["real_coin"]
-			coin_value = real_data["base_value"]
-			texture_path = real_data["texture"]
-		CoinType.CLOVER:
-			var clover_data = coin_data["clover_coin"]
-			var patterns = clover_data["patterns"]
-			var pattern_values = clover_data["pattern_values"]
-					
-			if pattern_level <= pattern_values.size():
-				coin_value = pattern_values[pattern_level - 1]
-				#根据图案等级选择纹理
-				texture_path = clover_data["texture_base"] + "_" + patterns[pattern_level - 1] + ".png"
-
-#设置硬币视觉效果
-func setup_visuals():
-	if ResourceLoader.exists(texture_path):
+func load_and_set_texture():
+	var texture_path = coin_data.get("current_texture", "")
+	
+	if texture_path and ResourceLoader.exists(texture_path):
 		var texture = load(texture_path)
-		if sprite:
-			sprite.texture = texture
+		sprite_2d.texture = texture
+
+func setup_collision_shape():
+	if sprite_2d.texture:
+		var texture_size = sprite_2d.texture.get_size()
+		var radius = min(texture_size.x, texture_size.y) * 0.4
+		
+		if collision_shape_2d.shape == null:
+			collision_shape_2d.shape = CircleShape2D.new()
+		
+		collision_shape_2d.shape.radius = radius
+
+func create_base_animations():
+	if not animation_player:
+		return
 	
-	if collision_shape:
-		collision_shape.disabled = !is_visible
+	# 生成动画
+	if not animation_player.has_animation("spawn"):
+		var spawn_anim = Animation.new()
+		var track_idx = spawn_anim.add_track(Animation.TYPE_VALUE)
+		spawn_anim.track_set_path(track_idx, ".:scale")
+		spawn_anim.track_insert_key(track_idx, 0.0, Vector2(0.1, 0.1))
+		spawn_anim.track_insert_key(track_idx, 0.2, Vector2(1.2, 1.2))
+		spawn_anim.track_insert_key(track_idx, 0.4, Vector2(1.0, 1.0))
+		spawn_anim.length = 0.4
+		animation_player.add_animation("spawn", spawn_anim)
+	
+	# 高亮动画
+	if not animation_player.has_animation("highlight"):
+		var highlight_anim = Animation.new()
+		var track_idx = highlight_anim.add_track(Animation.TYPE_VALUE)
+		highlight_anim.track_set_path(track_idx, "Sprite2D:modulate")
+		highlight_anim.track_insert_key(track_idx, 0.0, Color(1, 1, 1, 1))
+		highlight_anim.track_insert_key(track_idx, 0.1, Color(1, 1, 0.5, 1))
+		highlight_anim.track_insert_key(track_idx, 0.2, Color(1, 1, 1, 1))
+		highlight_anim.length = 0.3
+		animation_player.add_animation("highlight", highlight_anim)
+	
+	# 消失动画
+	if not animation_player.has_animation("fade_out"):
+		var fade_anim = Animation.new()
+		var track_idx = fade_anim.add_track(Animation.TYPE_VALUE)
+		fade_anim.track_set_path(track_idx, "Sprite2D:modulate:a")
+		fade_anim.track_insert_key(track_idx, 0.0, 1.0)
+		fade_anim.track_insert_key(track_idx, 0.3, 0.0)
+		fade_anim.length = 0.3
+		fade_anim.loop_mode = Animation.LOOP_NONE
+		animation_player.add_animation("fade_out", fade_anim)
 
-#获取硬币价值（用于结算）
-func get_value() -> float:
-	return coin_value
+func setup_special_effects():
+	match coin_type:
+		"太阳币", "月亮币", "星星币":
+			if is_high_value:
+				add_glow_effect(Color.YELLOW, 0.3)
+		"骷髅币":
+			add_pulse_effect(Color.DARK_GRAY, 1.5)
+		"血币":
+			add_pulse_effect(Color.DARK_RED, 1.2)
 
-#获取硬币类型
-func get_coin_type() -> CoinType:
+func add_glow_effect(color: Color, strength: float):
+	sprite_2d.modulate = color * (1.0 + strength)
+
+func add_pulse_effect(color: Color, speed: float):
+	if animation_player:
+		var animation_name = "pulse_%s" % name
+		var animation = Animation.new()
+		var track_idx = animation.add_track(Animation.TYPE_VALUE)
+		animation.track_set_path(track_idx, "Sprite2D:modulate")
+		animation.track_insert_key(track_idx, 0.0, color * 0.8)
+		animation.track_insert_key(track_idx, 0.5, color * 1.2)
+		animation.track_insert_key(track_idx, 1.0, color * 0.8)
+		animation.length = 1.0 / speed
+		animation.loop_mode = Animation.LOOP_LINEAR
+		
+		animation_player.add_animation(animation_name, animation)
+		animation_player.play(animation_name)
+
+# 公共方法
+func spawn_at_position(spawn_pos: Vector2):
+	global_position = spawn_pos
+	animation_player.play("spawn")
+	
+	var random_force = Vector2(randf_range(-50, 50), 0)
+	apply_central_impulse(random_force)
+
+func get_coin_value() -> int:
+	return current_value
+
+func get_coin_type() -> String:
 	return coin_type
 
-#获取图案等级
-func get_pattern_level() -> int:
-	return pattern_level
+func is_stress_coin() -> bool:
+	return coin_data.get("is_stress_coin", false)
 
-#设置硬币可见性
-func set_coin_visible(visible: bool):
-	is_visible = visible
-	if sprite:
-		sprite.visible = visible
-	if collision_shape:
-		collision_shape.disabled = !visible
+func is_penalty_coin() -> bool:
+	return coin_data.get("coin_group", "") == "penalty_coins"
 
-#硬币进入通道时的动画
-func play_enter_channel_animation():
-	var tween = create_tween()
-	tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.1)
-	tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.1)
+func highlight():
+	animation_player.play("highlight")
 
-#硬币结算时的动画
-func play_settle_animation():
-	var tween = create_tween()
-	tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.5)
-	tween.tween_callback(queue_free)
+func deactivate():
+	is_active = false
+	collision_shape_2d.set_deferred("disabled", true)
+	animation_player.play("fade_out")
+	await animation_player.animation_finished
+	queue_free()
 
-#鼠标悬停处理
-func _on_mouse_entered():
-	#悬停效果，后续等效果确定下来可以改成悬停显示效果
-	if sprite:
-		sprite.modulate = Color(1.2, 1.2, 1.2)
-
-#鼠标离开处理
-func _on_mouse_exited():
-	#恢复正常颜色
-	if sprite:
-		sprite.modulate = Color(1, 1, 1)
-
-#输入事件处理
-func _on_input_event(_viewport, event, _shape_idx):
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		#硬币被点击时会告诉玩家种类
-		print("Coin clicked: ", coin_type)
+# 物理回调
+func _on_body_entered(body: Node):
+	if not has_landed and body.is_in_group("channel_bottom"):
+		has_landed = true
+		linear_damp = 5.0
+		angular_damp = 5.0

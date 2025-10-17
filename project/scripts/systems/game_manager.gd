@@ -45,7 +45,7 @@ func _ready():
 	#连接到全局的游戏结束信号。这是至关重要的一步。
 	#当任何系统（如此处的债务系统）判定游戏结束时，
 	#这个管理器会监听到并做出反应。
-	Global.game_over_triggered.connect(_on_game_over)
+	Global.game_over.connect(_on_game_over)
 	
 func start_new_game():
 	"""
@@ -169,10 +169,18 @@ func end_player_turn():
 		return
 
 	#通知所有相关系统处理它们的回合结束逻辑
-	Global.debt_system.process_end_of_round()
-	Global.bank_system.process_end_of_round()
-	#在这里添加任何其他需要基于回合更新的系统，但由于具体的还没说就先不加
-	#例如：Global.event_system.process_end_of_round()
+	if Global.debt_system and Global.debt_system.has_method("process_end_of_round"):
+		Global.debt_system.process_end_of_round()
+	if Global.bank_system and Global.bank_system.has_method("process_end_of_round"):
+		Global.bank_system.process_end_of_round()
+	if Global.shop_system and Global.shop_system.has_method("process_round_start"):
+		# 下一小回合开始前刷新一次可用状态
+		Global.shop_system.process_round_start()
+	if Global.event_system and Global.event_system.has_method("process_round_end"):
+		Global.event_system.process_round_end()
+
+	# 推进到下一个小回合（6大回合×4小回合）
+	Global.advance_sub_round()
 	
 func return_to_main_menu():
 	"""
@@ -183,8 +191,8 @@ func return_to_main_menu():
 	
 func _on_game_over(reason: String):
 	"""
-	响应全局的 game_over_triggered 信号。
-	"""
+    响应全局的 game_over 信号。
+    """
 	current_state = GameState.GAME_OVER
 	
 	#在这里你可以显示一个特定的游戏结束画面或弹窗。

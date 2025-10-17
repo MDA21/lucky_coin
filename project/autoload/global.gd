@@ -15,6 +15,8 @@ var event_system = null
 var  pattern_system = null
 
 # 全局游戏状态
+const MAJOR_ROUNDS: int = 6
+const SUB_ROUNDS_PER_MAJOR: int = 4
 var current_round: int = 1
 var current_sub_round: int = 1
 var game_state: String = "menu" # menu, playing, paused, game_over
@@ -35,6 +37,8 @@ signal stress_effect_changed(distortion: float, filter: float)
 signal stress_max_reached()
 signal debt_changed(new_debt: float)
 signal round_changed(major_round: int, sub_round: int)
+signal sub_round_started(major_round: int, sub_round: int)
+signal sub_round_ended(major_round: int, sub_round: int)
 signal game_state_changed(new_state: String, old_state: String)
 signal game_over(reason: String)
 
@@ -59,14 +63,14 @@ func initialize_system_references():
 func cache_system_references():
 	"""缓存各个系统的引用"""
 	if game_manager:
-		currency_system = game_manager.get_system("currency_system")
-		stress_system = game_manager.get_system("stress_system")
-		debt_system = game_manager.get_system("debt_system")
-		coin_system = game_manager.get_system("coin_system")
-		shop_system = game_manager.get_system("shop_system")
-		bank_system = game_manager.get_system("bank_system")
-		event_system = game_manager.get_system("event_system")
-		pattern_system = game_manager.get_system("pattern_system") 
+		currency_system = Global.get_currency_system()
+		stress_system = Global.get_stress_system()
+		debt_system = Global.get_debt_system()
+		coin_system = Global.get_coin_system()
+		shop_system = Global.get_shop_system()
+		bank_system = Global.get_bank_system()
+		event_system = Global.get_event_system()
+		pattern_system = Global.get_pattern_system() 
 		
 		# 连接系统信号到全局信号
 		connect_system_signals()
@@ -187,11 +191,26 @@ func set_round(major_round: int, sub_round: int = 1):
 	round_changed.emit(major_round, sub_round)
 
 func advance_sub_round():
+	# 结束当前小回合
+	sub_round_ended.emit(current_round, current_sub_round)
+
+	# 进入下一个小回合/大回合
 	current_sub_round += 1
-	if current_sub_round > 4:  # 每个大回合4个小回合
+	if current_sub_round > SUB_ROUNDS_PER_MAJOR:
 		current_sub_round = 1
 		current_round += 1
+
+	# 超过上限则游戏结束
+	if current_round > MAJOR_ROUNDS:
+		trigger_game_over("max_rounds")
+		return
+
+	# 通知变更并开启新小回合
 	round_changed.emit(current_round, current_sub_round)
+	sub_round_started.emit(current_round, current_sub_round)
+
+func is_final_round() -> bool:
+	return current_round >= MAJOR_ROUNDS and current_sub_round >= SUB_ROUNDS_PER_MAJOR
 
 func trigger_game_over(reason: String):
 	game_over_reason = reason

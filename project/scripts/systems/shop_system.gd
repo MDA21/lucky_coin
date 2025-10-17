@@ -22,7 +22,7 @@ func _ready():
 	initialize_shop()
 
 func load_shop_config():
-	var file = FileAccess.open("res://data/shop_items.json", FileAccess.READ)
+	var file = FileAccess.open("res://project/data/shop_items.json", FileAccess.READ)
 	if file:
 		shop_config = JSON.parse_string(file.get_as_text())
 		refresh_cost = shop_config.refresh_cost.initial

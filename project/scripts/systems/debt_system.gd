@@ -112,6 +112,10 @@ func check_debt_default():
 	return false
 
 func trigger_game_over(reason: String):
+	# 同步触发全局的游戏结束流程，保持信号与处理逻辑一致
+	if Engine.has_singleton("Global") or Global != null:
+		Global.trigger_game_over(reason)
+	# 仍保留本地信号，供需要直接监听债务系统的节点使用
 	game_over.emit(reason)
 
 func update_debt_target_display():
