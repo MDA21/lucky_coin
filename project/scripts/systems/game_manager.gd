@@ -2,11 +2,12 @@ extends Node
 
 # preload scenes
 const VIEW_PATHS: Array[PackedScene] = [
-	preload("res://project/scenes/views/main_menu_view.tscn"),
+	preload("res://project/scenes/views/start_menu_view.tscn"),
 	preload("res://project/scenes/views/store_view.tscn"),
 	preload("res://project/scenes/views/hall_view.tscn"),
 	preload("res://project/scenes/views/bank_view.tscn"),
-	preload("res://project/scenes/views/exit_view.tscn")
+	preload("res://project/scenes/views/exit_view.tscn"),
+	preload("res://project/scenes/views/channel_view.tscn")
 ]
 
 # 场景索引，用于使用A键和D键切换场景
@@ -32,7 +33,7 @@ var current_state: GameState = GameState.MAIN_MENU
 # start from scene "main_menu"
 
 #通过数组管理场景
-var current_view_index: int = 1
+var current_view_index: int = 0
 var current_view_node: Node = null
 
 #当新游戏成功开始并初始化后发出此信号
@@ -47,6 +48,50 @@ func _ready():
 	#这个管理器会监听到并做出反应。
 	Global.game_over.connect(_on_game_over)
 	
+	call_deferred("_initialize_start_view")
+	
+func _initialize_start_view():
+	var initial_view: Node = null
+	
+	# 尝试直接获取 StartMenuView 节点
+	# 查找 /root/ 下的唯一一个不是 Autoload 的节点
+	for child in get_tree().get_root().get_children():
+		# 检查当前子节点是否是我们期望的 StartMenuView 场景实例
+		# 通过比较其场景文件路径和 VIEW_PATHS[0] 的路径来判断
+		var is_start_menu = false
+		
+		if child.get_scene_file_path() == VIEW_PATHS[0].get_path():
+			is_start_menu = true
+			
+		if is_start_menu:
+			initial_view = child
+			break
+
+	# 确保我们找到了节点
+	if is_instance_valid(initial_view):
+		
+		# 1. 验证 StartMenuView 是否有请求信号 (双重保险)
+		if initial_view.has_signal("request_game_start"):
+			
+			# 2. 从其父节点 (/root/) 中移除
+			# 此时因为是延迟调用，移除应该是成功的
+			initial_view.get_parent().remove_child(initial_view) 
+			
+			# 3. 将它添加到 GameManager 之下
+			add_child(initial_view)
+			
+			# 4. 赋值给 current_view_node 并连接信号
+			current_view_node = initial_view
+			current_view_index = 0
+			
+			current_view_node.request_game_start.connect(_on_game_start_requested)
+
+			print("DEBUG: GameManager successfully found, managed, and connected StartMenuView.")
+		else:
+			push_error("ERROR: Initial view found (name: " + initial_view.name + ") but is missing the 'request_game_start' signal.")
+	else:
+		push_error("ERROR: The main scene (StartMenuView) was not found as a direct child of /root/. Check your project settings.")
+		
 func start_new_game():
 	"""
 	这个函数应该由你主菜单中的“开始游戏”按钮调用。
@@ -74,11 +119,13 @@ func start_new_game():
 	# await get_tree().process_frame
 	
 	# 【修正】将初始视图添加到 GameManager 自身
-	var initial_view: Node = VIEW_PATHS[current_view_index].instantiate()
-	add_child(initial_view)
-	current_view_node = initial_view
+	const HALL_VIEW_INDEX = 2
+	_change_view(HALL_VIEW_INDEX)
 	
 func _input(event: InputEvent) -> void:
+	if current_state != GameState.IN_GAME:
+		return
+	
 	if not VIEW_MAP.has(current_view_index):
 		return
 		
@@ -108,6 +155,11 @@ func _change_view(new_index: int) -> void:
 			if current_view_node.request_game_start.is_connected(_on_game_start_requested):
 				current_view_node.request_game_start.disconnect(_on_game_start_requested)
 		
+		if current_view_node.has_signal("view_clicked"):
+			# 注意：这里的连接对象是 _change_view 自身
+			if current_view_node.view_clicked.is_connected(_change_view):
+				current_view_node.view_clicked.disconnect(_change_view)
+				
 		# 销毁旧视图节点
 		current_view_node.queue_free()
 		current_view_node = null
@@ -136,13 +188,21 @@ func _change_view(new_index: int) -> void:
 	
 	add_child(new_view)
 	
+	if new_index == 2:
+		if new_view.has_signal("view_clicked"):
+			# 当 HallView 发出点击信号时，调用 _change_view 来执行切换
+			new_view.view_clicked.connect(_change_view)
+	
 	current_view_node = new_view
 	current_view_index = new_index
 	
 	print("change to index: ", current_view_index, " (", new_view.name, ")")
 	
 func _on_game_start_requested():
-	_change_view(2)
+	'''
+	接收start_menu_view.gd的信号，完成游戏的初始化任务
+	'''
+	start_new_game()
 	
 # --- 新增：金币和游戏要求数据 ---
 var current_gold: float = 50.0   # 玩家当前的金币数量
@@ -192,7 +252,7 @@ func return_to_main_menu():
 func _on_game_over(reason: String):
 	"""
     响应全局的 game_over 信号。
-    """
+	"""
 	current_state = GameState.GAME_OVER
 	
 	#在这里你可以显示一个特定的游戏结束画面或弹窗。
@@ -213,7 +273,9 @@ func _load_game_config() -> Dictionary:
 
 # is_game_won()函数，用于查看游戏是否胜利，从而改变场景状态
 func is_game_won() -> bool:
-	#根据金币判断是否胜利
+	'''
+	根据金币判断是否胜利
+	'''
 	return current_gold >= required_gold
 	
 # 在出口场景中调用，用于游戏胜利并返回主菜单

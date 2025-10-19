@@ -6,7 +6,7 @@ extends Control
 
 @onready var closeup_view: Control = $CloseUpView
 @onready var items_container: Control = $CloseUpView/ItemContainer
-@onready var refresh_button: Button = $CloseUpView/RefreshPanel/RefreshButton
+@onready var refresh_area: Area2D = $CloseUpView/RefreshPanel/RefreshArea
 @onready var refresh_price_label: Label = $CloseUpView/RefreshPanel/RefreshPriceLabel
 
 # --- 状态 ---
@@ -22,6 +22,12 @@ func _ready():
 	# 2. 连接远景点击区域的信号
 	# 注意：这里的信号应在编辑器中连接或使用代码连接
 	close_up_area.input_event.connect(_on_close_up_area_input_event)
+	
+# 【新增】：连接刷新区域的输入事件信号
+	if is_instance_valid(refresh_area):
+		refresh_area.input_event.connect(_on_refresh_area_input_event)
+	else:
+		push_error("RefreshArea 节点缺失，无法连接刷新信号！")
 
 # --- 核心逻辑：视图切换 ---
 
@@ -59,4 +65,20 @@ func _on_close_up_area_input_event(_viewport: Node, event: InputEvent, _shape_id
 	if not is_close_up:
 		# 切换到近景
 		_set_view(true)
+		get_viewport().set_input_as_handled()
+		
+func _on_refresh_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int):
+	"""
+	处理 RefreshArea 的点击事件。
+	"""
+	# 仅处理鼠标左键按下事件（与你的 close_up_area 逻辑类似）
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+		return
+		
+	# 确保在近景模式下才能点击刷新（可选的逻辑检查）
+	if is_close_up:
+		print("Refresh Area Clicked! Triggering shop refresh...")
+		# 【TODO】：在这里调用 GameManager 或 ShopSystem 的刷新函数
+		# 例如：game_manager.shop_system.refresh_items() 
+		
 		get_viewport().set_input_as_handled()

@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Lucky_Coin"
-run/main_scene="uid://ybm3nq4wjnfl"
+run/main_scene="uid://hkvb7mb1ahck"
 config/features=PackedStringArray("4.5", "Forward Plus")
 config/icon="res://icon.svg"
 

@@ -23,7 +23,6 @@ anchors_preset = 0
 script = ExtResource("2_ra4j3")
 
 [node name="RemoteView" type="Control" parent="."]
-visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -73,7 +72,6 @@ position = Vector2(419, 475)
 shape = SubResource("RectangleShape2D_6ioe5")
 
 [node name="ItemContainer" type="Control" parent="CloseUpView"]
-visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0

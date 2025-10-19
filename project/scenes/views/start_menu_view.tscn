@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://hkvb7mb1ahck"]
+
+[ext_resource type="Script" uid="uid://d1vf7hgoyil60" path="res://project/scripts/views/start_menu_view.gd" id="1_l5ppr"]
+[ext_resource type="Texture2D" uid="uid://b1bxwg0kt7e43" path="res://project/assets/photo/exit_unlocked.png" id="2_sskqc"]
+[ext_resource type="Texture2D" uid="uid://dwkrwsv60d82c" path="res://project/assets/UI/main_banner.png" id="3_sskqc"]
+[ext_resource type="Texture2D" uid="uid://cf4a7qmvwguy7" path="res://project/assets/UI/start_botton.png" id="4_y0pnn"]
+
+[node name="StartMenuView" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_l5ppr")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+texture = ExtResource("2_sskqc")
+expand_mode = 1
+
+[node name="Title" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 28.0
+offset_right = 702.1904
+offset_bottom = 452.0
+texture = ExtResource("3_sskqc")
+expand_mode = 1
+
+[node name="StartButton" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(100, 200)
+layout_mode = 0
+offset_left = 649.0
+offset_top = 388.0
+offset_right = 2442.0
+offset_bottom = 1240.0
+scale = Vector2(0.22, 0.22)
+texture_normal = ExtResource("4_y0pnn")

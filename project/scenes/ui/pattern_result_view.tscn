@@ -1,0 +1,3 @@
+[gd_scene format=3 uid="uid://c5gxem85o22st"]
+
+[node name="PatternResultView" type="Node2D"]

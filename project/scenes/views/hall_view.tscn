@@ -1,43 +1,238 @@
-[gd_scene load_steps=5 format=3 uid="uid://btb6k8akugxvn"]
+[gd_scene load_steps=24 format=3 uid="uid://btb6k8akugxvn"]
 
-[ext_resource type="PackedScene" uid="uid://b3pm8taf12ekg" path="res://project/scenes/views/base_view.tscn" id="1_eccyt"]
-[ext_resource type="Script" uid="uid://bu3b50wcusayc" path="res://project/scripts/views/hall_view.gd" id="2_d68tx"]
-[ext_resource type="Texture2D" uid="uid://8qq2rx4o21pe" path="res://icon.svg" id="3_ynd7e"]
+[ext_resource type="Script" uid="uid://nb3c1pa3j25o" path="res://project/scripts/views/hall_view.gd" id="2_d68tx"]
+[ext_resource type="Texture2D" uid="uid://oh6xbdmw53se" path="res://project/assets/photo/machine_far.jpg" id="2_ynd7e"]
+[ext_resource type="Texture2D" uid="uid://b73v2rj7078if" path="res://project/assets/animation/coin_drop_anim.png" id="3_jk3p0"]
+[ext_resource type="Texture2D" uid="uid://rsuu0b4tk4s7" path="res://project/assets/UI/new_coins added-pop up.png" id="3_ynd7e"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_jk3p0"]
-size = Vector2(128, 128)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_d68tx"]
+size = Vector2(963.5, 386)
 
-[node name="BaseView" instance=ExtResource("1_eccyt")]
+[sub_resource type="AtlasTexture" id="AtlasTexture_djb4j"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(3182, 0, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lgfj8"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(0, 0, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_haflx"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(6364, 0, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_48bhq"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(9546, 0, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tr6d8"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(12728, 0, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_h4fmw"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(0, 2999, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_exexr"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(3182, 2999, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vj74j"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(6364, 2999, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c0wji"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(9546, 2999, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_i3db8"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(12728, 2999, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s3cx3"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(0, 5998, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s6d0n"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(3182, 5998, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gxay8"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(6364, 5998, 3182, 2999)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gcpfc"]
+atlas = ExtResource("3_jk3p0")
+region = Rect2(9546, 5998, 3182, 2999)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lef0s"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_djb4j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lgfj8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_haflx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_48bhq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tr6d8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_h4fmw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_exexr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vj74j")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c0wji")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_i3db8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s3cx3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s6d0n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gxay8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gcpfc")
+}],
+"loop": false,
+"name": &"drop",
+"speed": 20.0
+}]
+
+[sub_resource type="Animation" id="Animation_jk3p0"]
+resource_name = "CoinSequence"
+length = 3.6
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CoinUILayer/CoinDropAnimation:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 3.6),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [true, false]
+}
+tracks/1/type = "method"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("CoinUILayer/CoinDropAnimation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [&"drop", 1.0, false],
+"method": &"play"
+}]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(1, 2.5),
+"transitions": PackedFloat32Array(1, 1),
+"values": [{
+"args": [],
+"method": &"_show_coin_popup"
+}, {
+"args": [],
+"method": &"_hide_coin_popup"
+}]
+}
+
+[sub_resource type="Animation" id="Animation_djb4j"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("CoinUILayer/CoinDropAnimation:visible")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_lgfj8"]
+_data = {
+&"CoinSequence": SubResource("Animation_jk3p0"),
+&"RESET": SubResource("Animation_djb4j")
+}
+
+[node name="HallView" type="Control"]
+layout_mode = 3
+anchors_preset = 0
 script = ExtResource("2_d68tx")
 
-[node name="BackgroundWall" parent="." index="0"]
-color = Color(1, 0.85882354, 0.85882354, 1)
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1152.1008
+offset_bottom = 648.0
+mouse_filter = 2
+texture = ExtResource("2_ynd7e")
+expand_mode = 1
 
-[node name="LeverSprite" type="Sprite2D" parent="." index="1"]
-position = Vector2(800, 200)
-scale = Vector2(0.5, 1)
+[node name="ChannelViewArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ChannelViewArea"]
+position = Vector2(575.25, 189)
+shape = SubResource("RectangleShape2D_d68tx")
+
+[node name="CoinUILayer" type="CanvasLayer" parent="."]
+
+[node name="CoinDropAnimation" type="AnimatedSprite2D" parent="CoinUILayer"]
+visible = false
+position = Vector2(703.6868, 601.625)
+scale = Vector2(0.41038674, 0.41038677)
+sprite_frames = SubResource("SpriteFrames_lef0s")
+animation = &"drop"
+frame = 13
+frame_progress = 1.0
+
+[node name="CoinPopup" type="TextureRect" parent="CoinUILayer"]
+visible = false
+offset_left = 470.0
+offset_top = 328.0
+offset_right = 1036.0
+offset_bottom = 544.6557
 texture = ExtResource("3_ynd7e")
+expand_mode = 1
 
-[node name="LeverAnimator" type="AnimationPlayer" parent="LeverSprite" index="0"]
+[node name="AmountLabel" type="Label" parent="CoinUILayer/CoinPopup"]
+layout_mode = 0
+offset_left = 205.0
+offset_top = 62.0
+offset_right = 517.0
+offset_bottom = 166.0
+theme_override_colors/font_color = Color(0.27450982, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 70
 
-[node name="LeverArea" type="Area2D" parent="LeverSprite" index="1"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="LeverSprite/LeverArea" index="0"]
-shape = SubResource("RectangleShape2D_jk3p0")
-
-[node name="LabelTest1" type="Label" parent="." index="2"]
-offset_left = 856.0
-offset_top = 194.0
-offset_right = 936.0
-offset_bottom = 217.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-text = "这里是拉杆"
-
-[node name="Label1" type="Label" parent="." index="3"]
-offset_left = 83.0
-offset_top = 146.0
-offset_right = 413.08698
-offset_bottom = 198.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 32
-text = "按下“A”\"D\"切换场景"
+[node name="CoinAnimator" type="AnimationPlayer" parent="."]
+reset_on_save = false
+libraries = {
+&"": SubResource("AnimationLibrary_lgfj8")
+}

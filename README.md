@@ -5,6 +5,14 @@
 **Author：Ziggy Stardust**
 
 ## 更新日志
+
+**2025.10.19 泽康**
+
+导入了UI图片
+
+完成了除channel视角之外其他所有视角的切换逻辑、点击逻辑；<br>
+[TODO]UI未完成，hall_view硬币掉落动画未完成，channel视角未完成
+
 **2025.10.17 Ziggy**
 
 修了一些显然的bug，但估计还有不少得具体调试才知道。尝试实现硬币从硬币山进入通道的物理效果（coin_system.gd/coin.gd/channel.gd）
@@ -142,102 +150,102 @@ lucky_coin/
   #### 1. **GameManager** (`scripts/systems/game_manager.gd`)
   - **责任**: 游戏总控制器，协调所有子系统
   - **功能**: 
-    - 初始化所有子系统
-    - 管理游戏状态（开始、进行中、结束）
-    - 提供系统获取接口
-    - 场景切换和视图管理
+	- 初始化所有子系统
+	- 管理游戏状态（开始、进行中、结束）
+	- 提供系统获取接口
+	- 场景切换和视图管理
 
   #### 2. **CoinSystem** (`scripts/systems/coin_system.gd`)
   - **责任**: 硬币生成和概率管理
   - **功能**:
-    - 管理硬币山分布（6种硬币类型）
-    - 实现条件概率：硬币山 → 通道 → 硬币板
-    - 处理硬币两面性和高价值概率
-    - 应用增益效果到硬币分布
+	- 管理硬币山分布（6种硬币类型）
+	- 实现条件概率：硬币山 → 通道 → 硬币板
+	- 处理硬币两面性和高价值概率
+	- 应用增益效果到硬币分布
 
   #### 3. **ChannelSystem** (`scripts/systems/channel_system.gd`)
   - **责任**: 通道解锁和管理
   - **功能**:
-    - 管理递增解锁费用
-    - 处理通道的解锁、抛弃状态
-    - 与硬币系统集成填充通道
+	- 管理递增解锁费用
+	- 处理通道的解锁、抛弃状态
+	- 与硬币系统集成填充通道
 
   #### 4. **PatternSystem** (`scripts/systems/pattern_system.gd`)
   - **责任**: 图案识别和检测
   - **功能**:
-    - 检测11种图案组合
-    - 实现排除规则（基础图案算大不算小）
-    - 提供图案数据查询
+	- 检测11种图案组合
+	- 实现排除规则（基础图案算大不算小）
+	- 提供图案数据查询
 
   #### 5. **ComboCalculator** (`scripts/systems/combo_calculator.gd`)
   - **责任**: 收益和压力结算计算
   - **功能**:
-    - 计算单个/多个通道的结算结果
-    - 应用特殊规则（血币+骷髅币惩罚）
-    - 分离真硬币收益和图案收益
+	- 计算单个/多个通道的结算结果
+	- 应用特殊规则（血币+骷髅币惩罚）
+	- 分离真硬币收益和图案收益
 
   #### 6. **CurrencySystem** (`scripts/systems/currency_system.gd`)
   - **责任**: 货币管理和区分
   - **功能**:
-    - 区分贷款币和普通币
-    - 管理货币来源和消费策略
-    - 银行存储限制（贷款币不能存）
-    - 统一的货币交易接口
+	- 区分贷款币和普通币
+	- 管理货币来源和消费策略
+	- 银行存储限制（贷款币不能存）
+	- 统一的货币交易接口
 
   #### 7. **StressSystem** (`scripts/systems/stress_system.gd`)
   - **责任**: 压力值管理和视觉效果
   - **功能**:
-    - 压力值计算和限制
-    - 压力触发条件实现
-    - 视觉效果（扭曲、滤镜）
-    - 贷款压力管理
+	- 压力值计算和限制
+	- 压力触发条件实现
+	- 视觉效果（扭曲、滤镜）
+	- 贷款压力管理
 
   #### 8. **BankSystem** (`scripts/systems/bank_system.gd`)
   - **责任**: 银行和贷款管理
   - **功能**:
-    - 存款利息计算
-    - 短期/长期贷款管理
-    - 还款计划和压力减少
-    - 贷款违约处理
+	- 存款利息计算
+	- 短期/长期贷款管理
+	- 还款计划和压力减少
+	- 贷款违约处理
 
   #### 9. **Global** (`autoload/global.gd`)
   - **责任**: 全局接口和信号中心
   - **功能**:
-    - 系统引用缓存和转发
-    - 全局信号中心
-    - 便捷方法提供
-    - 游戏状态管理
+	- 系统引用缓存和转发
+	- 全局信号中心
+	- 便捷方法提供
+	- 游戏状态管理
 
   ### ⏳ 待更新/创建的系统
 
   #### 1. **DebtSystem** (`scripts/systems/debt_system.gd`)
   - **责任**: 债务目标管理和检查
   - **待完成**:
-    - 实现6个大回合债务目标
-    - 集成新货币系统检查偿还能力
-    - 债务结算和游戏结束条件
+	- 实现6个大回合债务目标
+	- 集成新货币系统检查偿还能力
+	- 债务结算和游戏结束条件
 
   #### 2. **ShopSystem** (`scripts/systems/shop_system.gd`)
   - **责任**: 商店道具管理和效果
   - **待完成**:
-    - 更新道具效果匹配新系统
-    - 实现刷新机制（初始20\$，×1.5递增）
-    - 道具分类管理（永久、充能、限次、一次性）
+	- 更新道具效果匹配新系统
+	- 实现刷新机制（初始20\$，×1.5递增）
+	- 道具分类管理（永久、充能、限次、一次性）
 
   #### 3. **EventSystem** (`scripts/systems/event_system.gd`)
   - **责任**: 随机增益事件管理
   - **待完成**:
-    - 实现5个增益选择（3选1）
-    - 增益分类实现（图案概率、价值、压力、银行、道具）
-    - 增益效果应用
+	- 实现5个增益选择（3选1）
+	- 增益分类实现（图案概率、价值、压力、银行、道具）
+	- 增益效果应用
 
   #### 4. **UI系统** (`scripts/ui/`)
   - **责任**: 用户界面和HUD
   - **待完成**:
-    - 主UI界面 (`main_ui.gd`)
-    - HUD控制 (`hud.gd`)
-    - 货币区分显示
-    - 压力视觉效果集成
+	- 主UI界面 (`main_ui.gd`)
+	- HUD控制 (`hud.gd`)
+	- 货币区分显示
+	- 压力视觉效果集成
 
   ## 剩余工作优先级
 
@@ -264,25 +272,25 @@ lucky_coin/
 
   ```
   GameManager (协调中心)
-      ├── CoinSystem (硬币生成)
-      │   └── 被: ChannelSystem, PatternGrid 调用
-      ├── ChannelSystem (通道管理) 
-      │   └── 被: SlotMachineView 调用
-      ├── PatternSystem (图案识别)
-      │   └── 被: ComboCalculator 调用
-      ├── ComboCalculator (收益计算)
-      │   ├── 依赖: PatternSystem, StressSystem
-      │   └── 被: SlotMachineView 调用
-      ├── CurrencySystem (货币管理)
-      │   └── 被: 所有经济相关系统调用
-      ├── StressSystem (压力管理)
-      │   └── 被: ComboCalculator, BankSystem 调用
-      ├── BankSystem (银行系统)
-      │   ├── 依赖: CurrencySystem, StressSystem
-      │   └── 被: BankView 调用
-      ├── DebtSystem (债务系统) [待更新]
-      ├── ShopSystem (商店系统) [待更新]
-      └── EventSystem (事件系统) [待创建]
+	  ├── CoinSystem (硬币生成)
+	  │   └── 被: ChannelSystem, PatternGrid 调用
+	  ├── ChannelSystem (通道管理) 
+	  │   └── 被: SlotMachineView 调用
+	  ├── PatternSystem (图案识别)
+	  │   └── 被: ComboCalculator 调用
+	  ├── ComboCalculator (收益计算)
+	  │   ├── 依赖: PatternSystem, StressSystem
+	  │   └── 被: SlotMachineView 调用
+	  ├── CurrencySystem (货币管理)
+	  │   └── 被: 所有经济相关系统调用
+	  ├── StressSystem (压力管理)
+	  │   └── 被: ComboCalculator, BankSystem 调用
+	  ├── BankSystem (银行系统)
+	  │   ├── 依赖: CurrencySystem, StressSystem
+	  │   └── 被: BankView 调用
+	  ├── DebtSystem (债务系统) [待更新]
+	  ├── ShopSystem (商店系统) [待更新]
+	  └── EventSystem (事件系统) [待创建]
   ```
 
   ## 下一步建议

@@ -3,6 +3,14 @@ extends Node
 # 预加载常用场景
 var notification_scene = preload("res://project/scenes/ui/NotificationPopup.tscn")
 
+# 修改！！！
+# --- 全局玩家数据（由 GameManager 初始化和控制）---
+# 必须显式声明，以避免 'Invalid assignment of property' 错误
+var current_money: float = 0.0     # 玩家的现金
+var casino_currency: int = 0       # 玩家的赌场代币
+var current_stress: float = 0.0    # 玩家的压力值
+var required_gold: float = 100.0   # 假设的胜利目标金币
+
 # 系统引用缓存（通过GameManager获取，这里只是缓存）
 var game_manager = null
 var coin_system = null

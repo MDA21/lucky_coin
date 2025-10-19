@@ -1,71 +1,133 @@
-extends "res://project/scripts/views/base_view.gd" 
+extends Control
 
-# 这里是你将来要引用的节点，例如推币机入口
-# @onready var coin_pusher_entrance: Area2D = $WorldContainer/CoinPusherEntrance 
-@onready var lever_area: Area2D = $LeverSprite/LeverArea
-@onready var lever_animator: AnimationPlayer = $LeverSprite/LeverAnimator
+# 定义一个信号，用于向上通知 GameManager 切换场景
+# GameManager 应该连接这个信号。
+signal view_clicked(target_index)
 
-# 倍率选择与观察模式（简化占位）
-var current_multiplier: float = 1.0
-var is_observation_mode: bool = false
+# === 节点引用 ===
 
-signal lever_pulled
+# 远景点击区域，用于跳转到 ChannelView
+@onready var channel_view_area: Area2D = $ChannelViewArea 
+
+@onready var coin_animator: AnimationPlayer = $CoinAnimator
+@onready var coin_drop_animation: AnimatedSprite2D = $CoinUILayer/CoinDropAnimation
+@onready var coin_popup: TextureRect = $CoinUILayer/CoinPopup 
+@onready var amount_label: Label = $CoinUILayer/CoinPopup/AmountLabel
+
+# 假设 GameManager 已经将 channel_view.tscn 注册到 VIEW_PATHS 的索引 5
+# 请根据你的实际配置修改这个索引
+const CHANNEL_VIEW_INDEX = 5 
+
+
+# === 初始化 ===
 
 func _ready():
-	# 这一行是必须的！它调用了 base_view.gd 中的 _ready() 函数，
-	# 从而触发了背景设置、强制布局刷新等所有通用功能。
-	super._ready()
+	coin_drop_animation.visible = false
+	coin_drop_animation.frame = 0 # 确保动画帧重置到第 0 帧
 	
-	print("Hall View Loaded and Ready.")
-	
-	lever_area.input_event.connect(_on_lever_area_input_event)
-	# 订阅全局小回合开始/结束（可用于重置UI状态）
-	Global.sub_round_started.connect(_on_sub_round_started)
-	Global.sub_round_ended.connect(_on_sub_round_ended)
-
-func _on_lever_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int):
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		
-		if lever_animator.is_playing():
-			return
-		
-		print("拉杆拉下")
-		
-		play_lever_animation()
-		
-		get_viewport().set_input_as_handled()
-		
-func play_lever_animation():
-	lever_animator.play("pull")
-	
-	lever_animator.animation_finished.connect(_on_pull_animation_finished, CONNECT_ONE_SHOT)
-	
-func _on_pull_animation_finished(anim_name: StringName):
-	if anim_name == "pull":
-		print("播放完毕")
-		emit_signal("lever_pulled")
-		
-		lever_animator.play("idle")
-		# 拉杆后进入观察阶段（第一次拉杆）：
-		is_observation_mode = true
-		_show_observation_overlay(true)
-
-# 选择倍率（例如由UI按钮调用）
-func set_multiplier(mult: float):
-	current_multiplier = max(1.0, mult)
-
-# 观察阶段切换显示（占位：后续可替换为实际UI控件）
-func _show_observation_overlay(visible: bool):
-	# 这里预留接口以展示观察提示、倍率按钮等
+	coin_animator.animation_finished.connect(_on_coin_sequence_finished)
+	# 确保 Area2D 节点有效
+	if is_instance_valid(channel_view_area):
+		# 连接 Area2D 的 input_event 信号到处理函数
+		channel_view_area.input_event.connect(_on_channel_view_area_input_event)
+	else:
+		push_error("ChannelViewArea 节点缺失或路径错误，无法实现点击跳转。")
 	pass
 
-func _on_sub_round_started(_major_round: int, _sub_round: int):
-	# 新小回合：重置观察与倍率
-	is_observation_mode = false
-	current_multiplier = 1.0
-	_show_observation_overlay(false)
+# [TODO]调试函数：用于模拟外部信号触发
+func _input(event: InputEvent):
+	# 检查是否按下了空格键
+	if event.is_action_pressed("ui_accept"): # 默认的 'ui_accept' 通常是空格键或回车键
+		
+		# 确保 AnimationPlayer 没有正在播放，防止重复触发
+		if not coin_animator.is_playing():
+			
+			# *** 触发动画序列 ***
+			var test_amount = 150.0 # 测试金额
+			_on_coin_drop_signal_received(test_amount)
+			
+			# 标记事件已处理，防止影响其他输入
+			get_viewport().set_input_as_handled()
 
-func _on_sub_round_ended(_major_round: int, _sub_round: int):
-	# 小回合结束：清理状态
-	_show_observation_overlay(false)
+# === 信号处理：点击跳转 ===
+
+func _on_channel_view_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int):
+	"""
+	处理 Area2D 接收到的输入事件。
 	
+	_viewport: 忽略，通常是根视口。
+	event: 发生的输入事件。
+	_shape_idx: 忽略，当 Area2D 有多个形状时使用。
+	"""
+	
+	# 1. 仅处理鼠标左键按下事件 (即玩家点击)
+	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+		return
+		
+	# 2. 检查事件是否应该被忽略（例如，如果游戏暂停或有弹窗打开）
+	# 这里可以根据需要添加 Global.game_manager.current_state 检查
+	
+	# 3. 发射信号通知 GameManager 切换场景
+	print("HallView: Clicked Area to switch to ChannelView (Index ", CHANNEL_VIEW_INDEX, ")")
+	view_clicked.emit(CHANNEL_VIEW_INDEX)
+	
+	# 4. 标记事件已处理，防止事件穿透到背景或其他场景
+	get_viewport().set_input_as_handled()
+
+# 外部系统将连接并调用这个函数，传入硬币数量
+func _on_coin_drop_signal_received(get_coin_amount: float):
+	"""
+	接收到 Coin_Drop_Signal 信号后，启动动画序列。
+	"""
+	# 1. 设置弹窗显示的金额
+	amount_label.text = str(get_coin_amount)
+	
+	# 2. 重置弹窗状态（确保从透明和不可见开始）
+	coin_popup.modulate = Color(1, 1, 1, 0) # 弹窗先设为透明
+	coin_popup.visible = false
+	
+	# 3. 启动 AnimationPlayer 动画序列
+	# 动画开始，0.0s处的关键帧会使硬币可见并播放
+	coin_animator.play("CoinSequence")
+
+# === 供 AnimationPlayer 调用的函数 ===
+
+func _show_coin_popup():
+	"""
+	在 1.0s 时被 CoinAnimator 调用。
+	【要求 2: 在动画播放延时约0.5s后，场景出现弹窗】
+	"""
+	
+	# 1. 确保弹窗节点可见
+	coin_popup.visible = true
+	
+	# 2. 使用 Tween 实现平滑淡入（0.3秒淡入）
+	var tween = create_tween()
+	tween.tween_property(coin_popup, "modulate", Color(1, 1, 1, 1), 0.3)
+
+
+func _hide_coin_popup():
+	"""
+	在 2.5s 时被 CoinAnimator 调用。
+	【要求 3: 在弹窗持续约1.5s后，弹窗消失，动画也不可见】
+	"""
+	
+	print("Hiding!")
+	
+	coin_drop_animation.visible = false
+	# 1. 使用 Tween 实现平滑淡出 (0.3秒淡出)
+	var tween = create_tween()
+	tween.tween_property(coin_popup, "modulate", Color(1, 1, 1, 0), 0.3)
+	
+	# 2. 等待淡出效果播放完毕
+	await tween.finished
+	
+	# 3. 清理弹窗
+	coin_popup.visible = false
+
+func _on_coin_sequence_finished(anim_name: StringName):
+	"""
+	在 AnimationPlayer 完成动画后自动调用。
+	"""
+	if anim_name == "CoinSequence":
+		coin_animator.stop()
