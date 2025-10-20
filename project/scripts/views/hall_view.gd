@@ -18,6 +18,8 @@ signal view_clicked(target_index)
 # 请根据你的实际配置修改这个索引
 const CHANNEL_VIEW_INDEX = 5 
 
+# 用于管理场景切换，在动画播放时禁止场景切换
+var is_scene_switch_locked: bool = false
 
 # === 初始化 ===
 
@@ -39,6 +41,8 @@ func _input(event: InputEvent):
 	# 检查是否按下了空格键
 	if event.is_action_pressed("ui_accept"): # 默认的 'ui_accept' 通常是空格键或回车键
 		
+		if is_scene_switch_locked:
+			get_viewport().set_input_as_handled()
 		# 确保 AnimationPlayer 没有正在播放，防止重复触发
 		if not coin_animator.is_playing():
 			
@@ -48,6 +52,13 @@ func _input(event: InputEvent):
 			
 			# 标记事件已处理，防止影响其他输入
 			get_viewport().set_input_as_handled()
+			
+	# 禁用所有场景切换输入
+	if is_scene_switch_locked:
+		# 禁用 AD 键切换
+		if event.is_action_pressed("scene_left") or event.is_action_pressed("scene_right"):
+			get_viewport().set_input_as_handled()
+			return
 
 # === 信号处理：点击跳转 ===
 
@@ -59,6 +70,10 @@ func _on_channel_view_area_input_event(_viewport: Node, event: InputEvent, _shap
 	event: 发生的输入事件。
 	_shape_idx: 忽略，当 Area2D 有多个形状时使用。
 	"""
+	
+	if is_scene_switch_locked:
+		get_viewport().set_input_as_handled()
+		return
 	
 	# 1. 仅处理鼠标左键按下事件 (即玩家点击)
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
@@ -79,12 +94,17 @@ func _on_coin_drop_signal_received(get_coin_amount: float):
 	"""
 	接收到 Coin_Drop_Signal 信号后，启动动画序列。
 	"""
+	# 禁止场景切换
+	is_scene_switch_locked = true
+	
 	# 1. 设置弹窗显示的金额
 	amount_label.text = str(get_coin_amount)
 	
 	# 2. 重置弹窗状态（确保从透明和不可见开始）
 	coin_popup.modulate = Color(1, 1, 1, 0) # 弹窗先设为透明
 	coin_popup.visible = false
+	coin_drop_animation.visible = true
+	coin_drop_animation.frame = 0
 	
 	# 3. 启动 AnimationPlayer 动画序列
 	# 动画开始，0.0s处的关键帧会使硬币可见并播放
@@ -124,10 +144,14 @@ func _hide_coin_popup():
 	
 	# 3. 清理弹窗
 	coin_popup.visible = false
+	
 
 func _on_coin_sequence_finished(anim_name: StringName):
 	"""
 	在 AnimationPlayer 完成动画后自动调用。
 	"""
+	# 解锁场景切换
+	is_scene_switch_locked = false
+	
 	if anim_name == "CoinSequence":
 		coin_animator.stop()

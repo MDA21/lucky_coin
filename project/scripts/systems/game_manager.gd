@@ -18,9 +18,13 @@ const VIEW_MAP: Dictionary = {
 	4: [3,1]  # bank  <- exit  ->store
 }
 
+# 加载主UI
 const HUD_SCENE: PackedScene = preload("res://project/scenes/ui/hud.tscn")
-
 var hud_node: CanvasLayer = null
+
+# 加载主菜单UI
+const MAIN_MENU_SCENE: PackedScene = preload("res://project/scenes/ui/main_menu.tscn")
+var pause_menu_node: Control = null
 
 #游戏状态
 enum GameState {
@@ -177,7 +181,11 @@ func _change_view(new_index: int) -> void:
 			add_child(new_hud)
 			hud_node = new_hud
 			print("DEBUG: HUD SUCCESSFULLY LOADED and added as child of GameManager.")
-			_update_hud_progress()
+			
+			if hud_node.has_signal("pause_menu_requested"):
+				hud_node.pause_menu_requested.connect(_on_pause_menu_requested)
+				
+			_update_hud_stats() 
 	
 	# 3. 实例化新场景
 	var new_view: Node = VIEW_PATHS[new_index].instantiate()
@@ -203,22 +211,18 @@ func _on_game_start_requested():
 	接收start_menu_view.gd的信号，完成游戏的初始化任务
 	'''
 	start_new_game()
-	
-# --- 新增：金币和游戏要求数据 ---
-var current_gold: float = 50.0   # 玩家当前的金币数量
-var required_gold: float = 100.0 # 预设目标数量
 
 # 在 Game Manager 中定义更新 HUD 的内部函数
-func _update_hud_progress():
+func _update_hud_stats():
 	if is_instance_valid(hud_node):
-		hud_node.update_coin_progress(current_gold, required_gold)
+		hud_node.update_stats(Global.required_gold, Global.current_loan, Global.current_money, Global.casino_currency, Global.current_stress)
 		print("HUD updated")
 		
 # --- 新增：一个更新金币的公共函数 ---
 func add_gold(amount: float):
-	current_gold += amount
+	Global.current_gold += amount
 	# 调用步骤 2 中的函数来更新 HUD
-	_update_hud_progress() 
+	_update_hud_stats() 
 
 func end_player_turn():
 	"""
@@ -276,7 +280,7 @@ func is_game_won() -> bool:
 	'''
 	根据金币判断是否胜利
 	'''
-	return current_gold >= required_gold
+	return Global.current_money >= Global.required_gold
 	
 # 在出口场景中调用，用于游戏胜利并返回主菜单
 func process_game_victory():
@@ -295,3 +299,68 @@ func process_game_victory():
 	
 	# 3. 返回主菜单
 	return_to_main_menu()
+
+
+func _on_pause_menu_requested():
+	""" 
+	响应 HUD 齿轮按钮的信号，加载暂停菜单。
+	此函数也用于处理 ESC 键的输入。
+	"""
+	# 避免重复加载菜单
+	if is_instance_valid(pause_menu_node):
+		return
+
+	# 1. 实例化菜单
+	var new_menu: Control = MAIN_MENU_SCENE.instantiate()
+	
+	# 2. 连接菜单的退出信号
+	new_menu.menu_closed.connect(_on_menu_closed)
+	new_menu.return_to_main_menu_requested.connect(_on_return_to_main_menu_requested)
+	
+	# 3. 将菜单添加到场景树 (添加到 GameManager 节点下)
+	add_child(new_menu)
+	pause_menu_node = new_menu
+	
+	print("DEBUG: Pause menu loaded and game paused.")
+
+
+func _on_menu_closed():
+	""" 
+	响应 MainMenu 脚本发出的关闭信号 (来自 ESC 或 X 按钮)。
+	"""
+	if is_instance_valid(pause_menu_node):
+		# 1. 销毁菜单节点
+		pause_menu_node.queue_free()
+		pause_menu_node = null
+		
+		# 2. 游戏恢复运行已在 MainMenu.gd 的 _close_menu 中处理
+		
+		print("DEBUG: Pause menu freed and game resumed.")
+
+
+func _on_return_to_main_menu_requested():
+	""" 
+	响应 MainMenu 脚本发出的返回主菜单请求。
+	"""
+	# 游戏恢复运行已在 MainMenu.gd 的 _on_return_button_pressed 中处理
+	
+	# 1. 确保菜单被清理 (防止在切换场景后残留)
+	_on_menu_closed() 
+	
+	# 2. 切换到主菜单场景 (假设主菜单索引为 0)
+	_change_view(0)
+	
+	print("DEBUG: Switching to Main Menu.")
+	
+func _unhandled_input(event: InputEvent):
+	# 检查是否按下了 ESC 键，并且当前不在主菜单 (假设索引 0 是主菜单)
+	if event.is_action_pressed("ui_cancel") and current_view_index != 0:
+		
+		if is_instance_valid(pause_menu_node):
+			# 如果菜单已经打开，我们信任 MainMenu.gd 会自行处理 ESC 键的关闭逻辑。
+			pass 
+		else:
+			# 如果菜单没有打开，则请求打开菜单
+			_on_pause_menu_requested() 
+			
+		get_viewport().set_input_as_handled()

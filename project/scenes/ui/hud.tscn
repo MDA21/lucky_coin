@@ -1,27 +1,126 @@
-[gd_scene load_steps=4 format=3 uid="uid://dcu78nm7yhngx"]
+[gd_scene load_steps=7 format=3 uid="uid://dcu78nm7yhngx"]
 
 [ext_resource type="Script" uid="uid://bi1adm818j1fh" path="res://project/scripts/ui/hud.gd" id="1_ah3le"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ah3le"]
-bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0, 0, 0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gojiv"]
-bg_color = Color(0.8420815, 0.6418962, 3.85046e-07, 1)
+[ext_resource type="Texture2D" uid="uid://dvtdpc83jw7ah" path="res://project/assets/UI/debt.png" id="2_gojiv"]
+[ext_resource type="Texture2D" uid="uid://b70gmyxu7xjdt" path="res://project/assets/UI/loan.png" id="3_fifbk"]
+[ext_resource type="Texture2D" uid="uid://r2b4eqgm8xcp" path="res://project/assets/UI/deposit.png" id="4_x7mpf"]
+[ext_resource type="Texture2D" uid="uid://dyedl1o87vksm" path="res://project/assets/UI/stress.png" id="5_4v33e"]
+[ext_resource type="Texture2D" uid="uid://cvxhyvx8ef0jc" path="res://project/assets/UI/settings_botton.png" id="6_4v33e"]
 
 [node name="hud" type="CanvasLayer"]
 layer = 2
 script = ExtResource("1_ah3le")
 
-[node name="CoinPusherBar" type="ProgressBar" parent="."]
-offset_left = 30.0
-offset_top = 30.0
-offset_right = 530.0
-offset_bottom = 70.0
-theme_override_styles/background = SubResource("StyleBoxFlat_ah3le")
-theme_override_styles/fill = SubResource("StyleBoxFlat_gojiv")
-show_percentage = false
+[node name="StatDisplayRoot" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="DebtGroup" type="Control" parent="StatDisplayRoot"]
+anchors_preset = 0
+offset_left = 40.0
+offset_top = 32.0
+offset_right = 241.0
+offset_bottom = 128.0
+
+[node name="DebtIcon" type="TextureRect" parent="StatDisplayRoot/DebtGroup"]
+layout_mode = 0
+offset_left = -29.0
+offset_top = -13.0
+offset_right = 248.6774
+offset_bottom = 51.0
+texture = ExtResource("2_gojiv")
+expand_mode = 1
+
+[node name="DebtLabel" type="Label" parent="StatDisplayRoot/DebtGroup"]
+layout_mode = 0
+offset_left = 83.0
+offset_top = -14.0
+offset_right = 257.0
+offset_bottom = 39.0
+theme_override_colors/font_color = Color(1, 1, 0.6627451, 1)
+theme_override_font_sizes/font_size = 38
+
+[node name="LoanGroup" type="Control" parent="StatDisplayRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="LoanIcon" type="TextureRect" parent="StatDisplayRoot/LoanGroup"]
+layout_mode = 0
+offset_left = 10.0
+offset_top = 90.0
+offset_right = 292.0249
+offset_bottom = 162.0
+texture = ExtResource("3_fifbk")
+expand_mode = 1
+
+[node name="LoanLabel" type="Label" parent="StatDisplayRoot/LoanGroup"]
+layout_mode = 0
+offset_left = 124.0
+offset_top = 89.0
+offset_right = 298.0
+offset_bottom = 152.0
+theme_override_colors/font_color = Color(1, 1, 0.6627451, 1)
+theme_override_font_sizes/font_size = 38
+
+[node name="GoldGroup" type="Control" parent="StatDisplayRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="GoldIcon" type="TextureRect" parent="StatDisplayRoot/GoldGroup"]
+layout_mode = 0
+offset_left = 746.0
+offset_top = 14.0
+offset_right = 1037.8237
+offset_bottom = 94.0
+texture = ExtResource("4_x7mpf")
+expand_mode = 1
+
+[node name="GoldLabel" type="Label" parent="StatDisplayRoot/GoldGroup"]
+layout_mode = 0
+offset_left = 829.0
+offset_top = 19.0
+offset_right = 1026.0
+offset_bottom = 77.0
+theme_override_colors/font_color = Color(1, 1, 0.6627451, 1)
+theme_override_font_sizes/font_size = 42
+
+[node name="StressGroup" type="Control" parent="StatDisplayRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="StressIcon" type="TextureRect" parent="StatDisplayRoot/StressGroup"]
+layout_mode = 0
+offset_left = 384.0
+offset_top = -34.0
+offset_right = 710.2352
+offset_bottom = 153.0
+texture = ExtResource("5_4v33e")
+expand_mode = 1
+
+[node name="StressLabel" type="Label" parent="StatDisplayRoot/StressGroup"]
+layout_mode = 0
+offset_left = 544.0
+offset_top = 41.0
+offset_right = 753.0
+offset_bottom = 114.0
+theme_override_colors/font_color = Color(0.67, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
+
+[node name="PauseGearButton" type="TextureButton" parent="."]
+custom_minimum_size = Vector2(10, 10)
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -92.0
+offset_top = 15.0
+offset_right = 209.0
+offset_bottom = 307.0
+grow_horizontal = 0
+scale = Vector2(0.25, 0.25)
+texture_normal = ExtResource("6_4v33e")
+stretch_mode = 4

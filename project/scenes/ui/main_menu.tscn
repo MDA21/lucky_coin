@@ -1,0 +1,62 @@
+[gd_scene load_steps=6 format=3 uid="uid://bn4xsku3rofkr"]
+
+[ext_resource type="Script" uid="uid://bgbd4sjxlppoa" path="res://project/scripts/ui/main_menu.gd" id="1_qfml3"]
+[ext_resource type="Texture2D" uid="uid://dbb8606lqpiic" path="res://project/assets/UI/menu_pop up.png" id="1_vhlmo"]
+[ext_resource type="Texture2D" uid="uid://cn074yyxfev8r" path="res://project/assets/UI/home_botton.png" id="2_1odtg"]
+[ext_resource type="Texture2D" uid="uid://dqd34hfk5bxqg" path="res://project/assets/UI/cancel_botton.png" id="2_u4pdj"]
+[ext_resource type="Texture2D" uid="uid://c6w77fx5v1j1p" path="res://project/assets/UI/quit_botton.png" id="3_qfml3"]
+
+[node name="MainMenu" type="Control"]
+process_mode = 2
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_qfml3")
+
+[node name="InputBlocker" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1152.0
+offset_bottom = 648.0
+color = Color(0, 0, 0, 0.5019608)
+
+[node name="MenuContainer" type="CenterContainer" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="MenuContent" type="Control" parent="MenuContainer"]
+layout_mode = 2
+
+[node name="MenuBackground" type="TextureRect" parent="MenuContainer/MenuContent"]
+layout_mode = 0
+offset_left = 383.0
+offset_top = 95.0
+offset_right = 769.0
+offset_bottom = 511.339
+texture = ExtResource("1_vhlmo")
+expand_mode = 1
+
+[node name="ButtonContainer" type="VBoxContainer" parent="MenuContainer/MenuContent"]
+layout_mode = 0
+offset_left = 429.0
+offset_top = 223.0
+offset_right = 1821.0
+offset_bottom = 1302.9999
+scale = Vector2(0.2, 0.2)
+theme_override_constants/separation = 300
+
+[node name="ReturnButton" type="TextureButton" parent="MenuContainer/MenuContent/ButtonContainer"]
+layout_mode = 2
+texture_normal = ExtResource("2_1odtg")
+
+[node name="QuitButton" type="TextureButton" parent="MenuContainer/MenuContent/ButtonContainer"]
+layout_mode = 2
+texture_normal = ExtResource("3_qfml3")
+
+[node name="CloseButton" type="TextureButton" parent="MenuContainer/MenuContent"]
+layout_mode = 0
+offset_left = 722.0
+offset_top = 80.0
+offset_right = 879.0
+offset_bottom = 234.0
+scale = Vector2(0.3, 0.3)
+texture_normal = ExtResource("2_u4pdj")

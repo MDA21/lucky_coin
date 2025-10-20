@@ -16,7 +16,7 @@ const STATE_INTERIOR = 2  # 银行内部 (第二次点击后)
 
 # --- 状态变量 ---
 var current_bank_state: int = STATE_CLOSED
-var current_loan_popup: CanvasLayer = null # 【新增】用于保存弹窗实例的引用
+var current_loan_popup: CanvasLayer = null # 用于保存弹窗实例的引用
 # 加载 LoanView 场景
 @onready var loan_view_scene: PackedScene = preload("res://project/scenes/views/loan_view.tscn") 
 @onready var game_manager = get_node("/root/GameManager") # 假设 GameManager 是单例

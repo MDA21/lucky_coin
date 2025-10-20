@@ -29,6 +29,16 @@ func _set_view(to_close_up: bool):
 	remote_view.visible = not to_close_up
 	closeup_view.visible = to_close_up
 
+func _input(event: InputEvent):
+	"""
+	处理 Esc 键按下事件，用于退出近景视图。
+	"""
+	if event.is_action_pressed("ui_cancel"): # ui_cancel 通常绑定 Esc 键
+		if is_close_up:
+			# 如果当前是近景，则切换回远景
+			_set_view(false)
+			get_viewport().set_input_as_handled()
+
 # 显示通知弹窗函数
 func _show_popup(message: String):
 	var popup_instance = notification_popup_scene.instantiate()
@@ -110,6 +120,6 @@ func _on_remote_door_input_event(_viewport: Node, event: InputEvent, _shape_idx:
 			_show_popup("游戏胜利")
 			
 			# 动作：跳转至某个场景 / 结束游戏 (TODO: 待实现)
-			game_manager.change_to_end_screen() 
+			# game_manager.change_to_end_screen() 
 			
 	get_viewport().set_input_as_handled()
