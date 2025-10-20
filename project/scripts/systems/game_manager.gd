@@ -40,19 +40,74 @@ var current_state: GameState = GameState.MAIN_MENU
 var current_view_index: int = 0
 var current_view_node: Node = null
 
+# --- 系统引用 ---
+var currency_system: Node = null
+var stress_system: Node = null
+var debt_system: Node = null
+var coin_system: Node = null
+var shop_system: Node = null
+var bank_system: Node = null
+var event_system: Node = null
+var pattern_system: Node = null
+
 #当新游戏成功开始并初始化后发出此信号
 signal game_started
 
 func _ready():
+	# 初始化所有子系统引用
+	_initialize_systems()
+	
 	#将自身注册到Global，以便在任何地方都能访问到
 	Global.game_manager = self
-	
+	Global.on_game_manager_ready(self)
 	#连接到全局的游戏结束信号。这是至关重要的一步。
 	#当任何系统（如此处的债务系统）判定游戏结束时，
 	#这个管理器会监听到并做出反应。
 	Global.game_over.connect(_on_game_over)
 	
 	call_deferred("_initialize_start_view")
+
+func _initialize_systems():
+	"""初始化所有子系统引用"""
+	# 获取所有子系统节点
+	currency_system = get_node_or_null("CurrencySystem")
+	stress_system = get_node_or_null("StressSystem")
+	debt_system = get_node_or_null("DebtSystem")
+	coin_system = get_node_or_null("CoinSystem")
+	shop_system = get_node_or_null("ShopSystem")
+	bank_system = get_node_or_null("BankSystem")
+	event_system = get_node_or_null("EventSystem")
+	pattern_system = get_node_or_null("PatternSystem")
+	
+	# 打印系统初始化状态用于调试
+	print("=== GameManager System Initialization ===")
+	print("CurrencySystem: ", "✓" if currency_system else "✗")
+	print("StressSystem: ", "✓" if stress_system else "✗")
+	print("DebtSystem: ", "✓" if debt_system else "✗")
+	print("CoinSystem: ", "✓" if coin_system else "✗")
+	print("ShopSystem: ", "✓" if shop_system else "✗")
+	print("BankSystem: ", "✓" if bank_system else "✗")
+	print("EventSystem: ", "✓" if event_system else "✗")
+	print("PatternSystem: ", "✓" if pattern_system else "✗")
+	
+	# 连接债务系统信号
+	_connect_debt_system_signals()
+	
+	# 通知 Global 系统已初始化
+	call_deferred("_notify_global_systems_ready")
+
+func _connect_debt_system_signals():
+	"""连接债务系统信号"""
+	if debt_system:
+		if debt_system.has_signal("game_victory"):
+			debt_system.game_victory.connect(_on_debt_system_victory)
+		if debt_system.has_signal("all_debts_completed"):
+			debt_system.all_debts_completed.connect(_on_all_debts_completed)
+
+func _notify_global_systems_ready():
+	"""通知 Global 系统已准备就绪"""
+	if Global.has_method("initialize_system_references"):
+		Global.initialize_system_references()
 	
 func _initialize_start_view():
 	var initial_view: Node = null
@@ -98,7 +153,7 @@ func _initialize_start_view():
 		
 func start_new_game():
 	"""
-	这个函数应该由你主菜单中的“开始游戏”按钮调用。
+	这个函数应该由你主菜单中的"开始游戏"按钮调用。
 	它会重置所有玩家数据，并切换到主游戏场景。
 	"""
 	#1. 从配置文件加载默认的玩家数值
@@ -112,6 +167,10 @@ func start_new_game():
 	# 如果需要，你也可以在这里重置其他系统的数据
 	# 例如，清空银行存款：
 	# Global.bank_system.savings = 0.0
+
+	# 初始化债务系统
+	if debt_system and debt_system.has_method("start_new_game"):
+		debt_system.start_new_game()
 
 	#2. 更新游戏状态
 	current_state = GameState.IN_GAME
@@ -233,15 +292,15 @@ func end_player_turn():
 		return
 
 	#通知所有相关系统处理它们的回合结束逻辑
-	if Global.debt_system and Global.debt_system.has_method("process_end_of_round"):
-		Global.debt_system.process_end_of_round()
-	if Global.bank_system and Global.bank_system.has_method("process_end_of_round"):
-		Global.bank_system.process_end_of_round()
-	if Global.shop_system and Global.shop_system.has_method("process_round_start"):
+	if debt_system and debt_system.has_method("process_end_of_round"):
+		debt_system.process_end_of_round()
+	if bank_system and bank_system.has_method("process_end_of_round"):
+		bank_system.process_end_of_round()
+	if shop_system and shop_system.has_method("process_round_start"):
 		# 下一小回合开始前刷新一次可用状态
-		Global.shop_system.process_round_start()
-	if Global.event_system and Global.event_system.has_method("process_round_end"):
-		Global.event_system.process_round_end()
+		shop_system.process_round_start()
+	if event_system and event_system.has_method("process_round_end"):
+		event_system.process_round_end()
 
 	# 推进到下一个小回合（6大回合×4小回合）
 	Global.advance_sub_round()
@@ -259,9 +318,11 @@ func _on_game_over(reason: String):
 	"""
 	current_state = GameState.GAME_OVER
 	
-	#在这里你可以显示一个特定的游戏结束画面或弹窗。
-	#目前，我们只显示一个通知，并在延迟后返回主菜单。
-	Global.show_notification("游戏结束: " + reason)
+	# 根据原因显示不同的消息
+	if reason == "victory":
+		Global.show_notification("恭喜！你成功偿还了所有债务，获得了自由！")
+	else:
+		Global.show_notification("游戏结束: " + reason)
 	
 	#创建一个计时器，等待几秒钟再返回主菜单，给玩家阅读信息的时间
 	var timer = get_tree().create_timer(4.0)
@@ -299,6 +360,44 @@ func process_game_victory():
 	
 	# 3. 返回主菜单
 	return_to_main_menu()
+
+# === 系统获取方法 ===
+func get_currency_system() -> Node:
+	return currency_system
+
+func get_stress_system() -> Node:
+	return stress_system
+
+func get_debt_system() -> Node:
+	return debt_system
+
+func get_coin_system() -> Node:
+	return coin_system
+
+func get_shop_system() -> Node:
+	return shop_system
+
+func get_bank_system() -> Node:
+	return bank_system
+
+func get_event_system() -> Node:
+	return event_system
+
+func get_pattern_system() -> Node:
+	return pattern_system
+
+# === 债务系统信号处理方法 ===
+func _on_debt_system_victory():
+	"""债务系统胜利信号处理"""
+	print("GameManager: 债务系统报告游戏胜利！")
+	process_game_victory()
+
+func _on_all_debts_completed():
+	"""所有债务完成信号处理"""
+	print("GameManager: 所有债务已完成！")
+	if current_state == GameState.IN_GAME:
+		# 可以在这里添加额外的胜利逻辑，比如显示特殊消息
+		Global.show_notification("恭喜！你成功偿还了所有债务！")
 
 
 func _on_pause_menu_requested():

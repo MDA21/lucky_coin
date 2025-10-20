@@ -6,11 +6,11 @@ var player_inventory: Dictionary = {}
 var refresh_cost: float = 0
 var refresh_count: int = 0
 
-@onready var currency_system = Global.get_currency_system()
-@onready var coin_system = Global.get_coin_system()
-@onready var stress_system = Global.get_stress_system()
-@onready var bank_system = Global.get_bank_system()
-@onready var debt_system = Global.get_debt_system()
+var currency_system = null
+var coin_system = null
+var stress_system = null
+var bank_system = null
+var debt_system = null
 
 signal shop_items_updated(items: Array)
 signal item_purchased(item_id: String, success: bool)
@@ -20,6 +20,16 @@ signal refresh_cost_updated(cost: float)
 func _ready():
 	load_shop_config()
 	initialize_shop()
+	# 延迟获取系统引用，确保 Global 已经初始化完成
+	call_deferred("initialize_system_references")
+	
+func initialize_system_references():
+	"""初始化系统引用"""
+	currency_system = Global.get_currency_system()
+	coin_system = Global.get_coin_system()
+	stress_system = Global.get_stress_system()
+	bank_system = Global.get_bank_system()
+	debt_system = Global.get_debt_system()
 
 func load_shop_config():
 	var file = FileAccess.open("res://project/data/shop_items.json", FileAccess.READ)
@@ -34,23 +44,82 @@ func initialize_shop():
 
 func generate_new_items(count: int = 5):
 	current_items.clear()
-	var available_items = shop_config.items.keys()
-	available_items.shuffle()
 	
+	# 获取所有可用的物品ID
+	var available_items = get_available_items()
+	
+	# 随机选择不重复的物品
 	for i in range(min(count, available_items.size())):
-		var item_id = available_items[i]
+		if available_items.is_empty():
+			break
+			
+		# 随机选择一个物品
+		var random_index = randi() % available_items.size()
+		var item_id = available_items[random_index]
+		
+		# 添加到当前物品列表
 		var item_data = shop_config.items[item_id].duplicate(true)
 		item_data.id = item_id
 		current_items.append(item_data)
+		
+		# 从可用列表中移除，确保不会重复选择
+		available_items.remove_at(random_index)
 	
 	shop_items_updated.emit(current_items)
+
+func get_available_items() -> Array:
+	"""获取当前可用的物品ID列表"""
+	var available_items = []
+	
+	# 遍历所有物品
+	for item_id in shop_config.items:
+		# 跳过已经在当前显示的物品（避免同一次刷新重复）
+		if is_item_in_current_display(item_id):
+			continue
+			
+		# 跳过已购买的非一次性物品
+		if is_non_consumable_item_purchased(item_id):
+			continue
+			
+		available_items.append(item_id)
+	
+	return available_items
+
+func is_item_in_current_display(item_id: String) -> bool:
+	"""检查物品是否已经在当前刷新中显示"""
+	for item in current_items:
+		if item.id == item_id:
+			return true
+	return false
+
+func is_non_consumable_item_purchased(item_id: String) -> bool:
+	"""检查非一次性物品是否已被购买"""
+	if not player_inventory.has(item_id):
+		return false
+	
+	var item_data = shop_config.items.get(item_id, {})
+	var effect_type = item_data.get("effect_type", "")
+	
+	# 定义非一次性物品类型
+	var non_consumable_types = ["permanent", "rechargeable", "round_limited"]
+	
+	# 如果是非一次性物品且已在库存中，则视为已购买
+	if non_consumable_types.has(effect_type) and player_inventory[item_id].quantity > 0:
+		return true
+	
+	return false
 
 func purchase_item(item_id: String) -> bool:
 	var item_data = get_item_data(item_id)
 	if not item_data:
 		return false
 	
-	if currency_system.spend_money(item_data.price, "shop_purchase", "auto"):
+	# 安全检查：确保货币系统可用
+	if not currency_system:
+		push_error("货币系统不可用！")
+		return false
+	
+	if currency_system.can_afford(item_data.price) and currency_system.spend_money(item_data.price, "shop_purchase", "auto"):
 		# 添加到玩家库存
 		add_to_inventory(item_id, item_data)
 		
@@ -84,13 +153,15 @@ func apply_item_effect(item_id: String, item_data: Dictionary):
 			# 金属探测器效果 - 在通道查看时显示分布
 			pass  # 在UI中实现
 		"increase_pattern_coin_stats":
-			coin_system.apply_buff_to_coin_pool("pattern_coin_percentage", effect_value.percentage)
-			coin_system.apply_buff_to_coin_pool("pattern_coin_high_value_prob", effect_value.high_value_prob)
+			if coin_system:
+				coin_system.apply_buff_to_coin_pool("pattern_coin_percentage", effect_value.percentage)
+				coin_system.apply_buff_to_coin_pool("pattern_coin_high_value_prob", effect_value.high_value_prob)
 		"increase_complex_pattern_multiplier":
 			# 在图案系统中实现
 			pass
 		"reduce_penalty_coins":
-			coin_system.apply_buff_to_coin_pool("penalty_coin_percentage", effect_value.percentage)
+			if coin_system:
+				coin_system.apply_buff_to_coin_pool("penalty_coin_percentage", effect_value.percentage)
 		"temporary_boost":
 			# 回合限时效果，在回合开始时应用
 			pass
@@ -104,7 +175,8 @@ func apply_item_effect(item_id: String, item_data: Dictionary):
 			# 在硬币系统中实现
 			pass
 		"increase_real_coin_percentage":
-			coin_system.apply_buff_to_coin_pool("real_coin_percentage", effect_value)
+			if coin_system:
+				coin_system.apply_buff_to_coin_pool("real_coin_percentage", effect_value)
 		"increase_luck":
 			# 在概率计算中实现
 			pass
@@ -112,7 +184,8 @@ func apply_item_effect(item_id: String, item_data: Dictionary):
 			# 在回合管理中实现
 			pass
 		"reset_stress":
-			stress_system.reset_stress()
+			if stress_system:
+				stress_system.reset_stress()
 		"interest_free_loan":
 			# 在银行系统中实现特殊贷款
 			pass
@@ -122,7 +195,8 @@ func apply_item_effect(item_id: String, item_data: Dictionary):
 			# 在图案系统中实现
 			pass
 		"reduce_stress":
-			stress_system.reduce_stress_immediate(effect_value)
+			if stress_system:
+				stress_system.reduce_stress_immediate(effect_value)
 		"free_channel_unlock":
 			# 在通道系统中实现
 			pass
@@ -160,9 +234,12 @@ func use_item(item_id: String) -> bool:
 	return true
 
 func refresh_shop():
-	if currency_system.spend_money(int(refresh_cost), "shop_refresh", "auto"):
-		refresh_count += 1
-		refresh_cost = shop_config.refresh_cost.initial * pow(shop_config.refresh_cost.multiplier, refresh_count)
+	# 安全检查：确保货币系统可用
+	if not currency_system:
+		push_error("货币系统不可用！")
+		return false
+	
+	if currency_system.can_afford(int(refresh_cost)) and currency_system.spend_money(int(refresh_cost), "shop_refresh", "auto"):
 		generate_new_items()
 		refresh_cost_updated.emit(refresh_cost)
 		return true
