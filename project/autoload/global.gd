@@ -58,8 +58,15 @@ signal config_loaded()
 # === 初始化方法 ===
 func _ready():
 	# 延迟获取系统引用，确保GameManager先初始化
-	call_deferred("initialize_system_references")
+	#call_deferred("initialize_system_references")
 	load_config()
+	
+# 添加这个方法供 GameManager 调用
+func on_game_manager_ready(game_mgr):
+	"""由 GameManager 在初始化完成后调用"""
+	game_manager = game_mgr
+	cache_system_references()
+	systems_initialized.emit()
 
 func initialize_system_references():
 	"""在GameManager初始化后调用此方法"""
@@ -71,14 +78,14 @@ func initialize_system_references():
 func cache_system_references():
 	"""缓存各个系统的引用"""
 	if game_manager:
-		currency_system = Global.get_currency_system()
-		stress_system = Global.get_stress_system()
-		debt_system = Global.get_debt_system()
-		coin_system = Global.get_coin_system()
-		shop_system = Global.get_shop_system()
-		bank_system = Global.get_bank_system()
-		event_system = Global.get_event_system()
-		pattern_system = Global.get_pattern_system() 
+		currency_system = GameManager.get_currency_system()
+		stress_system = GameManager.get_stress_system()
+		debt_system = GameManager.get_debt_system()
+		coin_system = GameManager.get_coin_system()
+		shop_system = GameManager.get_shop_system()
+		bank_system = GameManager.get_bank_system()
+		event_system = GameManager.get_event_system()
+		pattern_system = GameManager.get_pattern_system() 
 		
 		# 连接系统信号到全局信号
 		connect_system_signals()
@@ -208,10 +215,17 @@ func advance_sub_round():
 		current_sub_round = 1
 		current_round += 1
 
-	# 超过上限则游戏结束
-	if current_round > MAJOR_ROUNDS:
-		trigger_game_over("max_rounds")
-		return
+	# 同步债务系统的回合状态
+	if debt_system and debt_system.has_method("advance_round"):
+		var success = debt_system.advance_round()
+		if not success:
+			# 债务系统处理了游戏结束，不需要再次处理
+			return
+	else:
+		# 如果没有债务系统，使用原来的逻辑
+		if current_round > MAJOR_ROUNDS:
+			trigger_game_over("max_rounds")
+			return
 
 	# 通知变更并开启新小回合
 	round_changed.emit(current_round, current_sub_round)
@@ -225,12 +239,19 @@ func trigger_game_over(reason: String):
 	game_state = "game_over"
 	game_over.emit(reason)
 
+func trigger_game_victory():
+	"""触发游戏胜利"""
+	game_over_reason = "victory"
+	game_state = "game_over"
+	# 发出胜利信号而不是失败信号
+	game_over.emit("victory")
+
 # === UI 相关方法 ===
-func show_notification(message: String, duration: float = 3.0):
+func show_notification(message: String):
 	"""显示全局通知"""
 	var notification = notification_scene.instantiate()
 	get_tree().root.add_child(notification)
-	notification.show_message(message, duration)
+	notification.show_message(message)
 
 func show_insufficient_funds_notification():
 	"""显示资金不足通知"""
@@ -310,3 +331,12 @@ func print_debug_info():
 	if stress_system:
 		var stress = get_stress_info()
 		print("Stress: %d/%d (%s)" % [stress.current_stress, stress.max_stress, stress.stress_level])
+
+# is_game_won()函数，用于查看游戏是否胜利，从而改变场景状态
+func is_game_won() -> bool:
+	'''
+	根据债务系统判断是否胜利 - 所有6个大回合的债务都偿还完成
+	'''
+	if debt_system and debt_system.has_method("are_all_debts_completed"):
+		return debt_system.are_all_debts_completed()
+	return false

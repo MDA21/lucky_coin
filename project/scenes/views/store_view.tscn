@@ -206,7 +206,49 @@ offset_top = 45.0
 offset_right = 45.0
 offset_bottom = 68.0
 
+[node name="ItemSprite" type="TextureRect" parent="CloseUpView/ItemContainer/ItemSlot5"]
+layout_mode = 0
+offset_left = -45.0
+offset_top = -45.0
+offset_right = 45.0
+offset_bottom = 45.0
+expand_mode = 1
+
 [node name="ItemArea" type="Area2D" parent="CloseUpView/ItemContainer/ItemSlot5"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="CloseUpView/ItemContainer/ItemSlot5/ItemArea"]
 shape = SubResource("RectangleShape2D_jwrhw")
+
+[node name="TooltipPanel" type="Panel" parent="CloseUpView"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 165.0
+offset_right = 309.0
+offset_bottom = 339.0
+
+[node name="ItemName" type="Label" parent="CloseUpView/TooltipPanel"]
+layout_mode = 0
+offset_left = 3.0
+offset_right = 113.0
+offset_bottom = 23.0
+
+[node name="ItemDescription" type="Label" parent="CloseUpView/TooltipPanel"]
+layout_mode = 0
+offset_left = -1.0
+offset_top = 104.0
+offset_right = 267.0
+offset_bottom = 127.0
+
+[node name="ItemType" type="Label" parent="CloseUpView/TooltipPanel"]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 70.0
+offset_right = 74.0
+offset_bottom = 93.0
+
+[node name="ItemPrice" type="Label" parent="CloseUpView/TooltipPanel"]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 39.0
+offset_right = 43.0
+offset_bottom = 62.0

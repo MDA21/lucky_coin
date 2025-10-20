@@ -15,22 +15,35 @@ signal debt_target_updated(target_amount: int, paid_amount: int, remaining: int)
 signal debt_paid_successful(amount: int, round_number: int)
 signal debt_default(round_number: int, target_amount: int, paid_amount: int)
 signal game_over(reason: String)
+signal all_debts_completed # 新增：所有债务完成信号
+signal game_victory # 新增：游戏胜利信号
 
 func _ready():
 	load_debt_config()
 
 func load_debt_config():
-	var file = FileAccess.open("res://data/debt_config.json", FileAccess.READ)
+	var file = FileAccess.open("res://project/data/debt_config.json", FileAccess.READ)
 	if file:
 		debt_config = JSON.parse_string(file.get_as_text())
 		debt_targets = debt_config.debt_targets
 		file.close()
+	
+	# 确保回合结构与配置文件一致
+	if not debt_config.has("round_structure"):
+		debt_config.round_structure = {
+			"major_rounds": 6,
+			"sub_rounds_per_major": 4
+		}
 
 func start_new_game():
 	current_major_round = 1
 	current_sub_round = 1
 	debt_paid = 0
 	round_history.clear()
+	# 同步Global的回合状态
+	if Global:
+		Global.current_round = current_major_round
+		Global.current_sub_round = current_sub_round
 	debt_round_changed.emit(current_major_round, current_sub_round)
 	update_debt_target_display()
 
@@ -41,10 +54,22 @@ func advance_round():
 		current_sub_round = 1
 		current_major_round += 1
 		
+		# 同步Global的回合状态
+		if Global:
+			Global.current_round = current_major_round
+			Global.current_sub_round = current_sub_round
+		
 		# 检查大回合结束条件
 		if current_major_round > debt_config.round_structure.major_rounds:
-			trigger_game_over("max_rounds")
+			# 检查是否完成所有债务
+			check_game_victory()
+			if not are_all_debts_completed():
+				trigger_game_over("max_rounds")
 			return false
+		
+		# 新的大回合开始，重置债务支付状态
+		debt_paid = 0
+		update_debt_target_display()
 	
 	debt_round_changed.emit(current_major_round, current_sub_round)
 	return true
@@ -58,9 +83,17 @@ func can_afford_debt() -> bool:
 
 func pay_debt(amount: int = -1) -> bool:
 	var target_amount = get_current_debt_target()
+	var remaining_amount = target_amount - debt_paid
 	
 	if amount == -1:
-		amount = target_amount
+		amount = remaining_amount
+	else:
+		# 不能支付超过剩余需要的金额
+		amount = min(amount, remaining_amount)
+	
+	# 确保有足够的金额
+	if amount <= 0:
+		return true  # 已经完成
 	
 	if currency_system.spend_money(amount, "debt_payment", "auto"):
 		debt_paid += amount
@@ -90,6 +123,10 @@ func complete_round_debt():
 	
 	# 压力减少（盈利时）
 	stress_system.change_stress(-debt_config.penalties.round_profit_stress_decrease, "debt_paid")
+	
+	# 检查是否所有债务都已完成
+	if current_major_round >= debt_config.round_structure.major_rounds:
+		check_game_victory()
 
 func check_round_balance(round_earned: int, round_spent: int):
 	# 检查回合收益是否小于投入
@@ -139,3 +176,48 @@ func get_round_history() -> Array:
 
 func is_final_round() -> bool:
 	return current_major_round >= debt_config.round_structure.major_rounds
+
+# 新增方法：处理小回合结束
+func process_end_of_round():
+	"""在每个小回合结束时调用"""
+	# 如果是大回合的最后一个小回合，检查债务状态
+	if current_sub_round >= debt_config.round_structure.sub_rounds_per_major:
+		var target = get_current_debt_target()
+		if debt_paid < target:
+			# 大回合结束时债务未完成，触发违约
+			check_debt_default()
+
+# 新增方法：检查所有债务是否完成
+func are_all_debts_completed() -> bool:
+	"""检查所有6个大回合的债务是否都已完成"""
+	for round_num in range(1, debt_config.round_structure.major_rounds + 1):
+		var found = false
+		for record in round_history:
+			if record.round == round_num and record.completed:
+				found = true
+				break
+		if not found:
+			return false
+	return true
+
+# 新增方法：检查游戏胜利条件
+func check_game_victory():
+	"""检查是否满足游戏胜利条件"""
+	if are_all_debts_completed():
+		all_debts_completed.emit()
+		game_victory.emit()
+		# 触发全局胜利处理
+		if Global:
+			Global.trigger_game_victory()
+
+# 新增方法：获取债务完成状态
+func get_debt_completion_status() -> Dictionary:
+	"""获取所有债务的完成状态"""
+	var status = {}
+	for round_num in range(1, debt_config.round_structure.major_rounds + 1):
+		status[str(round_num)] = false
+		for record in round_history:
+			if record.round == round_num and record.completed:
+				status[str(round_num)] = true
+				break
+	return status
