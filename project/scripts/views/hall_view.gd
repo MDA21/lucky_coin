@@ -36,29 +36,7 @@ func _ready():
 		push_error("ChannelViewArea 节点缺失或路径错误，无法实现点击跳转。")
 	pass
 
-# [TODO]调试函数：用于模拟外部信号触发
-func _input(event: InputEvent):
-	# 检查是否按下了空格键
-	if event.is_action_pressed("ui_accept"): # 默认的 'ui_accept' 通常是空格键或回车键
-		
-		if is_scene_switch_locked:
-			get_viewport().set_input_as_handled()
-		# 确保 AnimationPlayer 没有正在播放，防止重复触发
-		if not coin_animator.is_playing():
-			
-			# *** 触发动画序列 ***
-			var test_amount = 150.0 # 测试金额
-			_on_coin_drop_signal_received(test_amount)
-			
-			# 标记事件已处理，防止影响其他输入
-			get_viewport().set_input_as_handled()
-			
-	# 禁用所有场景切换输入
-	if is_scene_switch_locked:
-		# 禁用 AD 键切换
-		if event.is_action_pressed("scene_left") or event.is_action_pressed("scene_right"):
-			get_viewport().set_input_as_handled()
-			return
+# 调试函数：用于模拟外部信号触发（已删除）
 
 # === 信号处理：点击跳转 ===
 

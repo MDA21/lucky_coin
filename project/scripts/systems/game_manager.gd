@@ -463,3 +463,63 @@ func _unhandled_input(event: InputEvent):
 			_on_pause_menu_requested() 
 			
 		get_viewport().set_input_as_handled()
+
+# [TODO] 获取概率的四个函数
+func _get_channel_a_data() -> Array:
+	# 
+	# 在实际的游戏管理器中，您应该在这里实现逻辑来获取或生成 A 通道的真实数据。
+	# 
+	# 占位符返回 (请替换为实际逻辑)
+	return [0.1, 0.2, 0.3, 0.1, 0.1, 0.2]
+
+func _get_channel_b_data() -> Array:
+	# 占位符返回 (请替换为实际逻辑)
+	return [0.15, 0.15, 0.2, 0.1, 0.2, 0.2]
+
+func _get_channel_c_data() -> Array:
+	# 占位符返回 (请替换为实际逻辑)
+	return [0.05, 0.05, 0.5, 0.1, 0.1, 0.2]
+
+func _get_channel_d_data() -> Array:
+	# 占位符返回 (请替换为实际逻辑)
+	return [0.4, 0.1, 0.1, 0.1, 0.1, 0.2]
+	
+# [TODO] 获取后三个通道开销的函数
+func _get_channel_costs() -> Array:
+	# 占位符
+	return [100,200,300]
+
+# [TODO] 告知gamemanager该通道被选择
+func _handle_channel_selected(channel_id: String, cost: int):
+	"""
+	告知gamemanager该通道被选择
+	第一个参数为"A"/"B"/"C"/"D" 后一个参数为价格
+	"""
+	pass
+
+# [TODO] 用于更新场景弹窗的数额，并执行加款
+func process_channel_view_cleanup_and_switch():
+	"""
+	跳转至hall_view，更新弹窗显示金币数额，播放弹窗，标识回合结束，增加玩家金钱数量，
+	"""
+	_change_view(2)
+	await get_tree().process_frame
+	
+	# [TODO] 获取本次的金币
+	var coin_amount: float = 100.0 # 默认
+	
+# 3. 调用 HallView 的金币掉落函数
+	# 必须检查 current_view_node 是否为 HallView 且方法是否存在
+	if is_instance_valid(current_view_node) and current_view_index == 2:
+		
+		# 确保 HallView 具有目标函数签名
+		if current_view_node.has_method("_on_coin_drop_signal_received"):
+			
+			# 【核心调用】执行 HallView 的方法
+			current_view_node._on_coin_drop_signal_received(coin_amount)
+			
+			print("GameManager: HallView 金币掉落函数已成功调用。")
+		else:
+			push_error("HallView 缺少 _on_coin_drop_signal_received 方法！")
+	else:
+		push_error("场景切换失败，无法找到 HallView 节点。")

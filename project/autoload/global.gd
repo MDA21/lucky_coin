@@ -26,6 +26,7 @@ var  pattern_system = null
 # 全局游戏状态
 const MAJOR_ROUNDS: int = 6
 const SUB_ROUNDS_PER_MAJOR: int = 4
+
 var current_round: int = 1
 var current_sub_round: int = 1
 var game_state: String = "menu" # menu, playing, paused, game_over
