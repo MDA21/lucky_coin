@@ -10,6 +10,8 @@ var events_history: Array = []
 @onready var bank_system = $"/root/GameManager".get_system("bank_system")
 @onready var shop_system = $"/root/GameManager".get_system("shop_system")
 @onready var debt_system = $"/root/GameManager".get_system("debt_system")
+@onready var pattern_system = $"/root/GameManager".get_system("pattern_system")
+@onready var channel_system = $"/root/GameManager".get_system("channel_system")
 
 signal events_available(events: Array)
 signal event_selected(event_id: String, event_data: Dictionary)
@@ -124,66 +126,84 @@ func apply_event_effect(event_data: Dictionary, is_negative: bool) -> bool:
 					coin_system.apply_buff_to_coin_pool("penalty_coin_high_value_prob", effect_value)
 		
 		"increase_basic_pattern_multiplier":
-			# 在图案系统中实现
-			pass
+			# 在图案系统中实现倍率加成
+			if pattern_system:
+				pattern_system.add_basic_pattern_multiplier(effect_value)
 		
 		"multiply_coin_value":
-			# 在硬币系统中实现
-			pass
+			# 在硬币系统中实现价值倍率
+			if coin_system:
+				coin_system.set_coin_value_multiplier(effect_target, effect_value)
 		
 		"multiply_coin_base_value":
-			# 在硬币系统中实现
-			pass
+			# 在硬币系统中实现基础价值倍率
+			if coin_system:
+				coin_system.set_coin_base_value_multiplier(effect_target, effect_value)
 		
 		"multiply_coin_high_value":
-			# 在硬币系统中实现
-			pass
+			# 在硬币系统中实现高价值倍率
+			if coin_system:
+				coin_system.set_coin_high_value_multiplier(effect_target, effect_value)
 		
 		"increase_max_stress":
 			stress_system.set_max_stress(stress_system.max_stress + effect_value)
 		
 		"reduce_stress_growth":
-			# 在压力系统中实现
-			pass
+			# 在压力系统中实现压力增长减少
+			if stress_system:
+				stress_system.set_stress_growth_multiplier(effect_value)
 		
 		"boost_stress_reduction_items":
-			# 在压力系统中实现
-			pass
+			# 在压力系统中实现减压道具效果增强
+			if stress_system:
+				stress_system.set_stress_reduction_multiplier(effect_value)
 		
 		"reduce_loan_stress":
-			# 在压力系统中实现
-			pass
+			# 在压力系统中实现贷款压力减少
+			if stress_system:
+				stress_system.set_loan_stress_multiplier(effect_value)
 		
 		"boost_pattern_stress_reduction":
-			# 在压力系统中实现
-			pass
+			# 在压力系统中实现图案减压效果增强
+			if stress_system:
+				stress_system.set_pattern_stress_reduction_multiplier(effect_value)
 		
 		"increase_savings_interest":
-			bank_system.set_interest_rate(bank_system.savings_interest_rate + effect_value)
+			bank_system.savings_interest_rate += effect_value
 		
 		"reduce_loan_interest":
-			# 在银行系统中实现
-			pass
+			# 在银行系统中实现贷款利率减少
+			if bank_system:
+				if effect_value is Dictionary:
+					# 处理不同期限的贷款利率
+					bank_system.set_loan_interest_multipliers(effect_value)
+				else:
+					bank_system.loan_interest_rate *= effect_value
 		
 		"expand_loan_options":
-			# 在银行系统中实现
-			pass
+			# 在银行系统中实现贷款选项扩展
+			if bank_system:
+				bank_system.enable_expanded_loan_options()
 		
 		"add_repayment_option":
-			# 在银行系统中实现
-			pass
+			# 在银行系统中实现还贷方式扩展
+			if bank_system:
+				bank_system.enable_flexible_repayment()
 		
 		"shop_discounts":
-			# 在商店系统中实现
-			pass
+			# 在商店系统中实现折扣功能
+			if shop_system:
+				shop_system.enable_shop_discounts(effect_value)
 		
 		"reduce_refresh_cost":
-			# 在商店系统中实现
-			pass
+			# 在商店系统中实现刷新费用减少
+			if shop_system:
+				shop_system.set_refresh_cost_multiplier(effect_value)
 		
 		"reduce_channel_cost":
-			# 在通道系统中实现
-			pass
+			# 在通道系统中实现解锁费用减少
+			if channel_system:
+				channel_system.set_unlock_cost_multiplier(effect_value)
 	
 	event_applied.emit(event_data.id, effect)
 	return true

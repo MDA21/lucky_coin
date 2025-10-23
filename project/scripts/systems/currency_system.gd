@@ -29,14 +29,14 @@ class Currency:
 				else:
 					return false
 			"auto":
-				#优先使用普通货币
-				if normal_money >= amount:
-					normal_money -= amount
+				#优先使用贷款货币
+				if loan_money >= amount:
+					loan_money -= amount
 					return true
 				else:
-					var remaining = amount - normal_money
-					normal_money = 0
-					loan_money -= remaining
+					var remaining = amount - loan_money
+					loan_money = 0
+					normal_money -= remaining
 					return true
 		
 		return false
@@ -70,7 +70,7 @@ func add_money(amount: int, source_type: String = "normal", is_loan: bool = fals
 func spend_money(amount: int, purpose: String, spend_preference: String = "auto") -> bool:
 	if player_currency.spend(amount, spend_preference):
 		total_spent += amount
-		var used_loan = (spend_preference == "loan") or (spend_preference == "auto" and player_currency.normal_money < amount)
+		var used_loan = (spend_preference == "loan") or (spend_preference == "auto")
 		money_changed.emit(player_currency.normal_money, player_currency.loan_money, player_currency.get_total())
 		money_spent.emit(amount, purpose, used_loan)
 		return true
@@ -125,4 +125,12 @@ func withdraw_from_bank(amount: int):
 	money_changed.emit(player_currency.normal_money, player_currency.loan_money, player_currency.get_total())
 
 func get_available_for_bank() -> int:
+	return player_currency.normal_money
+
+# 新增方法：获取贷款货币（赌场货币）
+func get_loan_money() -> int:
+	return player_currency.loan_money
+
+# 新增方法：获取普通货币
+func get_normal_money() -> int:
 	return player_currency.normal_money

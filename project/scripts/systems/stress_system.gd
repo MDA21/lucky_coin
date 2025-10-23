@@ -87,11 +87,11 @@ func reduce_stress_from_patterns(pattern_results: Array):
 	if total_reduction > 0:
 		change_stress(-total_reduction, "pattern_combo")
 
-# 贷款压力管理
-func add_stress_from_loan(loan_amount: int, is_short_term: bool) -> int:
+# 贷款压力管理 目前这部分托管给了银行系统
+'''func add_stress_from_loan(loan_amount: int, is_short_term: bool) -> int:
 	var stress_amount = calculate_loan_stress(loan_amount, is_short_term)
 	change_stress(stress_amount, "loan_taken")
-	return stress_amount
+	return stress_amount'''
 
 func calculate_loan_stress(loan_amount: int, is_short_term: bool) -> int:
 	# 根据贷款金额计算压力值
@@ -144,3 +144,110 @@ func set_max_stress(new_max: int):
 # 道具效果：立即减少压力
 func reduce_stress_immediate(amount: int):
 	change_stress(-amount, "item_effect")
+
+# 检查并应用道具效果
+func check_item_effects():
+	var shop_system = Global.get_shop_system()
+	if not shop_system:
+		return
+	
+	# 抗压体质 - 增加最大压力值
+	if shop_system.has_item("stress_resistance"):
+		# 这个效果在事件系统中处理，这里只是检查
+		pass
+	
+	# 心理预期 - 减少压力增长
+	if shop_system.has_item("psychological_expectation"):
+		# 这个效果在事件系统中处理
+		pass
+	
+	# 主任医师 - 增强精神类药物效果
+	if shop_system.has_item("chief_physician"):
+		# 这个效果在事件系统中处理
+		pass
+	
+	# 善解人意的贷款经理 - 减少贷款压力
+	if shop_system.has_item("understanding_loan_manager"):
+		# 这个效果在事件系统中处理
+		pass
+	
+	# 乐天派 - 增强图案减压效果
+	if shop_system.has_item("optimist"):
+		# 这个效果在事件系统中处理
+		pass
+
+# 统一压力变化方法（合并道具和事件效果）
+func change_stress_with_all_effects(amount: int, source: String = "unknown"):
+	var final_amount = amount
+	
+	# 应用事件效果倍率
+	if amount > 0 and source == "slot_machine":
+		final_amount = int(amount * stress_growth_multiplier)
+	elif amount < 0 and source == "item_effect":
+		final_amount = int(amount * stress_reduction_multiplier)
+	elif amount < 0 and source == "pattern_combo":
+		final_amount = int(amount * pattern_stress_reduction_multiplier)
+	
+	# 应用道具效果（如果事件效果未应用）
+	if final_amount == amount:
+		# 检查心理预期效果（减少压力增长）
+		if amount > 0 and source == "slot_machine":
+			var shop_system = Global.get_shop_system()
+			if shop_system and shop_system.has_item("psychological_expectation"):
+				final_amount = int(amount * 0.75)  # 减少25%的压力增长
+		
+		# 检查主任医师效果（增强减压道具效果）
+		if amount < 0 and source == "item_effect":
+			var shop_system = Global.get_shop_system()
+			if shop_system and shop_system.has_item("chief_physician"):
+				final_amount = int(amount * 1.5)  # 增强50%的减压效果
+		
+		# 检查乐天派效果（增强图案减压效果）
+		if amount < 0 and source == "pattern_combo":
+			var shop_system = Global.get_shop_system()
+			if shop_system and shop_system.has_item("optimist"):
+				final_amount = int(amount * 1.5)  # 增强50%的图案减压效果
+	
+	change_stress(final_amount, source)
+
+# 统一贷款压力计算（合并道具和事件效果）
+func add_stress_from_loan_with_all_effects(loan_amount: int, is_short_term: bool) -> int:
+	var base_stress = calculate_loan_stress(loan_amount, is_short_term)
+	
+	# 应用事件效果倍率
+	base_stress = int(base_stress * loan_stress_multiplier)
+	
+	# 应用道具效果（如果事件效果未应用）
+	if loan_stress_multiplier == 1.0:
+		var shop_system = Global.get_shop_system()
+		if shop_system and shop_system.has_item("understanding_loan_manager"):
+			base_stress = int(base_stress * 0.6)  # 减少40%的贷款压力
+	
+	change_stress(base_stress, "loan_taken")
+	return base_stress
+
+# 重置压力（AED效果）- 已在上方定义，此处删除重复
+
+# 事件效果：压力系统倍率
+var stress_growth_multiplier: float = 1.0
+var stress_reduction_multiplier: float = 1.0
+var loan_stress_multiplier: float = 1.0
+var pattern_stress_reduction_multiplier: float = 1.0
+
+func set_stress_growth_multiplier(multiplier: float):
+	"""设置压力增长倍率（事件效果）"""
+	stress_growth_multiplier = multiplier
+
+func set_stress_reduction_multiplier(multiplier: float):
+	"""设置减压效果倍率（事件效果）"""
+	stress_reduction_multiplier = multiplier
+
+func set_loan_stress_multiplier(multiplier: float):
+	"""设置贷款压力倍率（事件效果）"""
+	loan_stress_multiplier = multiplier
+
+func set_pattern_stress_reduction_multiplier(multiplier: float):
+	"""设置图案减压倍率（事件效果）"""
+	pattern_stress_reduction_multiplier = multiplier
+
+# 删除重复的事件效果方法，已合并到上面的统一方法中

@@ -189,3 +189,91 @@ func calculate_results(coin_grid: Array) -> Dictionary:
 
 func get_detected_patterns() -> Array:
 	return detected_patterns.duplicate()
+
+# 道具效果存储
+var item_multipliers: Dictionary = {
+	"basic_pattern_multiplier": 0.0,
+	"complex_pattern_multiplier": 0.0
+}
+
+# 检查并应用道具效果
+func check_item_effects():
+	var shop_system = Global.get_shop_system()
+	if not shop_system:
+		return
+	
+	# 重置倍率
+	item_multipliers["basic_pattern_multiplier"] = 0.0
+	item_multipliers["complex_pattern_multiplier"] = 0.0
+	
+	# 数字图腾效果 - 基础图案倍率+0.5
+	if shop_system.has_item("digital_totem"):
+		item_multipliers["basic_pattern_multiplier"] += 0.5
+	
+	# 符文卷轴效果 - 复杂图案倍率+2
+	if shop_system.has_item("runes_scroll"):
+		item_multipliers["complex_pattern_multiplier"] += 2.0
+	
+	# 炼金坩埚效果 - 回合限时，基础图案倍率+1
+	if shop_system.has_item("alchemical_crucible"):
+		item_multipliers["basic_pattern_multiplier"] += 1.0
+
+# 应用道具倍率到图案计算
+func apply_item_multipliers(base_multiplier: int) -> int:
+	var final_multiplier = base_multiplier
+	
+	# 应用基础图案倍率加成
+	final_multiplier += int(item_multipliers["basic_pattern_multiplier"])
+	
+	# 应用复杂图案倍率加成
+	final_multiplier += int(item_multipliers["complex_pattern_multiplier"])
+	
+	return max(1, final_multiplier)  # 确保倍率至少为1
+
+# 修改图案检测以应用道具效果
+func detect_patterns_with_effects(coin_grid: Array) -> Dictionary:
+	# 先检查道具效果
+	check_item_effects()
+	
+	# 执行正常的图案检测
+	var results = detect_patterns(coin_grid)
+	
+	# 应用道具倍率到结果
+	if results.has("patterns_found"):
+		for pattern in results.patterns_found:
+			if pattern.has("multiplier"):
+				pattern.multiplier = apply_item_multipliers(pattern.multiplier)
+	
+	return results
+
+# 检查是否为复杂图案
+func is_complex_pattern(pattern_type: String) -> bool:
+	var complex_patterns = ["left_arrow", "right_arrow", "left_big", "right_big", "eye", "sun", "full_screen"]
+	return complex_patterns.has(pattern_type)
+
+# 检查是否为基础图案
+func is_basic_pattern(pattern_type: String) -> bool:
+	var basic_patterns = ["three_line", "four_line", "five_line"]
+	return basic_patterns.has(pattern_type)
+
+# 事件效果：基础图案倍率加成
+var event_basic_multiplier: float = 0.0
+
+func add_basic_pattern_multiplier(amount: float):
+	"""添加基础图案倍率加成（事件效果）"""
+	event_basic_multiplier += amount
+
+# 修改图案检测以应用事件倍率
+func detect_patterns_with_event_effects(coin_grid: Array) -> Dictionary:
+	# 执行正常的图案检测
+	var results = detect_patterns(coin_grid)
+	
+	# 应用事件倍率到基础图案
+	if results.has("patterns_found"):
+		for pattern in results.patterns_found:
+			if pattern.has("multiplier") and is_basic_pattern(pattern.type):
+				pattern.multiplier += event_basic_multiplier
+				# 确保倍率至少为1
+				pattern.multiplier = max(1, pattern.multiplier)
+	
+	return results

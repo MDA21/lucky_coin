@@ -63,7 +63,7 @@ func _ready():
 	#连接到全局的游戏结束信号。这是至关重要的一步。
 	#当任何系统（如此处的债务系统）判定游戏结束时，
 	#这个管理器会监听到并做出反应。
-	Global.game_over.connect(_on_game_over)
+	Global.game_over.connect(_on_global_game_over)
 	
 	call_deferred("_initialize_start_view")
 
@@ -274,7 +274,7 @@ func _on_game_start_requested():
 # 在 Game Manager 中定义更新 HUD 的内部函数
 func _update_hud_stats():
 	if is_instance_valid(hud_node):
-		hud_node.update_stats(Global.required_gold, Global.current_loan, Global.current_money, Global.casino_currency, Global.current_stress)
+		hud_node.update_stats()
 		print("HUD updated")
 		
 # --- 新增：一个更新金币的公共函数 ---
@@ -305,6 +305,13 @@ func end_player_turn():
 	# 推进到下一个小回合（6大回合×4小回合）
 	Global.advance_sub_round()
 	
+func _on_global_game_over(reason: String):
+	"""
+	响应全局游戏结束信号
+	"""
+	current_state = GameState.GAME_OVER
+	print("游戏结束，原因: ", reason)
+
 func return_to_main_menu():
 	"""
 	让玩家返回主菜单界面。
@@ -312,7 +319,7 @@ func return_to_main_menu():
 	current_state = GameState.MAIN_MENU
 	get_tree().change_scene_to_file("res://project/scenes/views/main_menu_view.tscn")
 	
-func _on_game_over(reason: String):
+'''func _on_game_over(reason: String):
 	"""
     响应全局的 game_over 信号。
 	"""
@@ -328,7 +335,7 @@ func _on_game_over(reason: String):
 	var timer = get_tree().create_timer(4.0)
 	await timer.timeout
 	
-	return_to_main_menu()
+	return_to_main_menu()'''
 
 func _load_game_config() -> Dictionary:
 	"""加载主游戏配置文件。"""
@@ -496,6 +503,116 @@ func _handle_channel_selected(channel_id: String, cost: int):
 	第一个参数为"A"/"B"/"C"/"D" 后一个参数为价格
 	"""
 	pass
+
+# 检查并应用道具效果
+func check_item_effects():
+	if not shop_system:
+		return
+	
+	# 深渊之眼效果 - 额外小回合
+	if shop_system.has_item("abyss_eye"):
+		# 这个效果在回合结束时检查
+		pass
+	
+	# 护身符效果 - 增加幸运值
+	if shop_system.has_item("talisman"):
+		# 这个效果在概率计算中应用
+		pass
+	
+	# 源石科技效果 - 充能所有道具
+	if shop_system.has_item("originium_tech"):
+		# 这个效果在商店系统中处理
+		pass
+
+# 应用道具效果的回合推进
+func advance_sub_round_with_effects():
+	# 检查深渊之眼效果
+	if shop_system and shop_system.has_item("abyss_eye"):
+		var item = shop_system.get_player_inventory().get("abyss_eye", {})
+		if item.get("uses_remaining", 0) > 0:
+			# 20%概率触发额外小回合
+			if randf() <= 0.20:
+				# 触发额外小回合
+				trigger_extra_sub_round()
+				return
+	
+	# 正常推进回合
+	Global.advance_sub_round()
+
+# 触发额外小回合
+func trigger_extra_sub_round():
+	Global.show_notification("深渊之眼触发！获得额外小回合！")
+	# 这里可以添加额外的回合逻辑
+	# 比如不推进回合数，而是给玩家额外的操作机会
+
+# 应用道具效果的回合开始
+func process_round_start_with_effects():
+	# 检查所有系统的道具效果
+	if coin_system and coin_system.has_method("check_item_effects"):
+		coin_system.check_item_effects()
+	
+	if pattern_system and pattern_system.has_method("check_item_effects"):
+		pattern_system.check_item_effects()
+	
+	if stress_system and stress_system.has_method("check_item_effects"):
+		stress_system.check_item_effects()
+	
+	if bank_system and bank_system.has_method("check_item_effects"):
+		bank_system.check_item_effects()
+	
+	# 处理商店系统的回合开始逻辑
+	if shop_system and shop_system.has_method("process_round_start"):
+		shop_system.process_round_start()
+
+# 获取幸运值加成（护身符效果）
+func get_luck_bonus() -> int:
+	if not shop_system or not shop_system.has_item("talisman"):
+		return 0
+	
+	var item = shop_system.get_player_inventory().get("talisman", {})
+	if item.get("uses_remaining", 0) > 0:
+		# 33%概率触发幸运值+5
+		if randf() <= 0.33:
+			return 5
+	
+	return 0
+
+# 事件触发机制
+func trigger_round_end_events():
+	"""在大回合结束时触发事件选择"""
+	if not event_system:
+		return
+	
+	# 检查是否应该提供事件
+	if debt_system and debt_system.is_final_round():
+		return  # 最后一回合不提供事件
+	
+	# 检查债务状态
+	if debt_system and debt_system.check_debt_default():
+		return  # 债务违约时不提供事件
+	
+	# 触发事件系统
+	if event_system.has_method("offer_events"):
+		event_system.offer_events()
+
+# 处理事件选择
+func handle_event_selection(event_id: String, is_negative: bool = false):
+	"""处理玩家选择的事件"""
+	if not event_system:
+		return false
+	
+	return event_system.select_event(event_id, is_negative)
+
+# 获取当前可用事件
+func get_available_events() -> Array:
+	if not event_system:
+		return []
+	
+	return event_system.get_random_events(3)
+
+# 检查事件系统状态
+func is_event_system_ready() -> bool:
+	return event_system != null and event_system.has_method("offer_events")
 
 # [TODO] 用于更新场景弹窗的数额，并执行加款
 func process_channel_view_cleanup_and_switch():

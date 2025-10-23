@@ -236,10 +236,67 @@ func advance_sub_round():
 func is_final_round() -> bool:
 	return current_round >= MAJOR_ROUNDS and current_sub_round >= SUB_ROUNDS_PER_MAJOR
 
+# 在 global.gd 中简化 trigger_game_over 函数
+
 func trigger_game_over(reason: String):
-	game_over_reason = reason
+	"""
+	触发游戏结束 - 显示通知并返回主界面
+	"""
+	# 检查是否已经处于游戏结束状态，避免重复触发
+	if game_state == "game_over":
+		return
+	
+	print("游戏结束触发，原因: ", reason)
+	
+	# 设置游戏状态
 	game_state = "game_over"
+	
+	# 根据原因显示不同的消息
+	var message = _get_game_over_message(reason)
+	show_notification(message)
+	
+	# 发出游戏结束信号
 	game_over.emit(reason)
+	
+	# 创建计时器，等待几秒后返回主菜单
+	var timer = Timer.new()
+	timer.wait_time = 3.0  # 3秒后返回主菜单
+	timer.one_shot = true
+	add_child(timer)
+	timer.timeout.connect(_return_to_main_menu_after_game_over)
+	timer.start()
+
+func _get_game_over_message(reason: String) -> String:
+	"""根据游戏结束原因返回对应的消息"""
+	match reason:
+		"debt_default", "债务违约":
+			return "债务违约！你未能按时偿还债务"
+		"stress_max", "压力爆表":
+			return "压力爆表！你的精神崩溃了"
+		"loan_default", "贷款违约":
+			return "贷款违约！你未能偿还贷款"
+		"max_rounds", "回合用尽":
+			return "时间耗尽！你未能完成所有债务"
+		"victory", "胜利":
+			return "恭喜！你成功偿还了所有债务，获得了自由！"
+		"loan_pressure", "贷款压力过大":
+			return "贷款压力过大！你无法承受贷款带来的压力"
+		_:
+			return "游戏结束: " + reason
+
+func _return_to_main_menu_after_game_over():
+	"""游戏结束后返回主菜单"""
+	# 清理计时器
+	var timer = get_child(get_child_count() - 1)  # 获取最后一个子节点（应该是计时器）
+	if timer is Timer:
+		timer.queue_free()
+	
+	# 返回主菜单
+	if game_manager and game_manager.has_method("return_to_main_menu"):
+		game_manager.return_to_main_menu()
+	else:
+		# 如果没有game_manager引用，直接切换场景
+		get_tree().change_scene_to_file("res://project/scenes/views/start_menu_view.tscn")
 
 func trigger_game_victory():
 	"""触发游戏胜利"""

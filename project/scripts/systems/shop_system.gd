@@ -282,3 +282,62 @@ func get_item_quantity(item_id: String) -> int:
 	if player_inventory.has(item_id):
 		return player_inventory[item_id].quantity
 	return 0
+
+# 事件效果：商店系统扩展功能
+var shop_discounts_enabled: bool = false
+var discount_config: Dictionary = {}
+var refresh_cost_multiplier: float = 1.0
+
+func enable_shop_discounts(discount_data: Dictionary):
+	"""启用商店折扣功能（事件效果）"""
+	shop_discounts_enabled = true
+	discount_config = discount_data
+
+func set_refresh_cost_multiplier(multiplier: float):
+	"""设置刷新费用倍率（事件效果）"""
+	refresh_cost_multiplier = multiplier
+
+# 应用事件效果的刷新费用
+func get_refresh_cost_with_effects() -> int:
+	var base_cost = refresh_cost
+	return int(base_cost * refresh_cost_multiplier)
+
+# 统一刷新方法（合并道具和事件效果）
+func refresh_shop_with_all_effects():
+	# 使用调整后的刷新费用
+	var cost = get_refresh_cost_with_effects()
+	
+	if currency_system and currency_system.can_afford(cost) and currency_system.spend_money(cost, "shop_refresh", "auto"):
+		generate_new_items()
+		refresh_cost_updated.emit(refresh_cost)
+		return true
+	return false
+
+# 检查商品是否有折扣
+func has_item_discount(item_id: String) -> bool:
+	if not shop_discounts_enabled:
+		return false
+	
+	# 根据折扣配置检查概率
+	var probability = discount_config.get("probability", 0.0)
+	return randf() <= probability
+
+# 获取商品折扣率
+func get_item_discount_rate(item_id: String) -> float:
+	if not has_item_discount(item_id):
+		return 1.0
+	
+	# 随机生成折扣率
+	var min_discount = discount_config.get("min_discount", 0.1)
+	var max_discount = discount_config.get("max_discount", 0.9)
+	return randf_range(min_discount, max_discount)
+
+# 应用折扣到商品价格
+func get_item_price_with_discount(item_id: String) -> int:
+	var item_data = get_item_data(item_id)
+	if not item_data:
+		return 0
+	
+	var base_price = item_data.get("price", 0)
+	var discount_rate = get_item_discount_rate(item_id)
+	return int(base_price * discount_rate)
