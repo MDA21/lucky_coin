@@ -41,6 +41,8 @@ _data = {
 }
 
 [node name="NotificationPopup" type="CanvasLayer"]
+offset = Vector2(0, 610)
+transform = Transform2D(1, 0, 0, 1, 0, 610)
 script = ExtResource("1_qhwa2")
 
 [node name="Control" type="Control" parent="."]
@@ -51,13 +53,13 @@ offset_bottom = 40.0
 
 [node name="ColorRect" type="ColorRect" parent="Control"]
 layout_mode = 0
-offset_right = 938.0
+offset_right = 1150.0
 offset_bottom = 40.0
-color = Color(0.7411765, 0.078431375, 1, 1)
+color = Color(0.24529749, 0.2380642, 0.21066049, 1)
 
 [node name="MarginContainer" type="MarginContainer" parent="Control/ColorRect"]
 layout_mode = 0
-offset_right = 927.0
+offset_right = 1150.0
 offset_bottom = 40.0
 
 [node name="Label" type="Label" parent="Control/ColorRect/MarginContainer"]

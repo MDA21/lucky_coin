@@ -63,9 +63,9 @@ func _ready():
 	if Global.shop_system:
 		_connect_shop_signals()
 		# 初始化显示商品
-		_update_shop_items(Global.shop_system.get_current_items())
+		_update_shop_items(GameManager.shop_system.get_current_items())
 		# 初始化刷新价格
-		_update_refresh_price(Global.shop_system.refresh_cost)
+		_update_refresh_price(GameManager.shop_system.refresh_cost)
 	else:
 		# 如果商店系统还没准备好，延迟连接
 		call_deferred("_deferred_connect_shop")
@@ -76,8 +76,8 @@ func _deferred_connect_shop():
 	"""延迟连接商店信号"""
 	if Global.shop_system:
 		_connect_shop_signals()
-		_update_shop_items(Global.shop_system.get_current_items())
-		_update_refresh_price(Global.shop_system.refresh_cost)
+		_update_shop_items(GameManager.shop_system.get_current_items())
+		_update_refresh_price(GameManager.shop_system.refresh_cost)
 	else:
 		push_error("商店系统不可用！")
 
@@ -145,14 +145,9 @@ func _on_refresh_area_input_event(_viewport: Node, event: InputEvent, _shape_idx
 		print("Refresh Area Clicked! Triggering shop refresh...")
 		# 【DONE】：在这里调用 GameManager 或 ShopSystem 的刷新函数
 		# 例如：game_manager.shop_system.refresh_items() 
-		currency_system = Global.get_currency_system()
-	if currency_system.can_afford(refresh_cost):
-		if currency_system.spend_money(int(refresh_cost), "shop_refresh", "auto"):
-			refresh_cost*=1.5
-			Global.shop_system.refresh_shop()
-			return true
-	else:
-		Global.show_notification("资金不足！")
+	if Global.shop_system:
+		Global.shop_system.refresh_shop()
+
 
 		
 		get_viewport().set_input_as_handled()

@@ -238,12 +238,22 @@ func refresh_shop():
 	if not currency_system:
 		push_error("货币系统不可用！")
 		return false
+
+	# 使用当前刷新费用
+	var cost = refresh_cost
 	
-	if currency_system.can_afford(int(refresh_cost)) and currency_system.spend_money(int(refresh_cost), "shop_refresh", "auto"):
+	print("尝试刷新商店，费用: ", cost)
+	
+	if currency_system.can_afford(cost) and currency_system.spend_money(cost, "shop_refresh", "auto"):
 		generate_new_items()
-		refresh_cost_updated.emit(refresh_cost)
+		# 更新刷新费用
+		refresh_cost = int(refresh_cost * shop_config.refresh_cost.multiplier)  # 修复：使用配置中的倍率
+		refresh_cost_updated.emit(refresh_cost)  # 修复：发出信号更新UI
+		Global.show_notification("刷新成功！")
 		return true
-	return false
+	else:
+		Global.show_notification("资金不足！")
+		return false
 
 func refresh_shop_free():
 	generate_new_items()
