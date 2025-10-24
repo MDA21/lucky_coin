@@ -126,11 +126,24 @@ func purchase_item(item_id: String) -> bool:
 		# 应用物品效果
 		apply_item_effect(item_id, item_data)
 		
+		# 从当前商品列表中移除已购买的商品
+		_remove_item_from_current_items(item_id)
+		
 		item_purchased.emit(item_id, true)
+		
+		# 【新增】立即更新UI显示
+		shop_items_updated.emit(current_items)
+		
 		return true
 	else:
 		item_purchased.emit(item_id, false)
 		return false
+		
+func _remove_item_from_current_items(item_id: String):
+	for i in range(current_items.size()):
+		if current_items[i].id == item_id:
+			current_items.remove_at(i)
+			break
 
 func add_to_inventory(item_id: String, item_data: Dictionary):
 	if not player_inventory.has(item_id):

@@ -161,7 +161,6 @@ func start_new_game():
 	if config and config.has("player_defaults"):
 		var defaults = config.player_defaults
 		Global.current_money = defaults.get("start_money", 100.0)
-		Global.casino_currency = defaults.get("start_casino_currency", 10)
 		Global.current_stress = defaults.get("start_stress", 0.0)
 	
 	# 如果需要，你也可以在这里重置其他系统的数据
@@ -301,7 +300,15 @@ func end_player_turn():
 		shop_system.process_round_start()
 	if event_system and event_system.has_method("process_round_end"):
 		event_system.process_round_end()
-
+	# 应用货币自动增长
+	if currency_system and currency_system.has_method("apply_growth"):
+		var growth_amount = currency_system.apply_growth()
+		if growth_amount > 0:
+			Global.show_notification("货币自动增长: %d 元" % growth_amount)
+			
+	if Global.check_game_end_conditions():
+		return  # 如果游戏结束，不再推进回合
+		
 	# 推进到下一个小回合（6大回合×4小回合）
 	Global.advance_sub_round()
 	

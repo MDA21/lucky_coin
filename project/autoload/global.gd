@@ -7,7 +7,6 @@ var notification_scene = preload("res://project/scenes/ui/NotificationPopup.tscn
 # --- 全局玩家数据（由 GameManager 初始化和控制）---
 # 必须显式声明，以避免 'Invalid assignment of property' 错误
 var current_money: int = 0     # 玩家的现金
-var casino_currency: int = 0       # 玩家的赌场代币
 var current_loan: int = 0		  # 玩家当前的还款数
 var current_stress: int = 0    # 玩家的压力值
 var required_gold: int = 100   # 假设的胜利目标金币
@@ -109,6 +108,18 @@ func connect_system_signals():
 			stress_system.stress_effect_changed.connect(_on_stress_effect_changed)
 		if stress_system.has_signal("stress_max_reached"):
 			stress_system.stress_max_reached.connect(_on_stress_max_reached)
+	
+	# 【新增】连接债务系统信号
+	if debt_system:
+		if debt_system.has_signal("debt_default"):
+			debt_system.debt_default.connect(_on_debt_default)
+		if debt_system.has_signal("game_victory"):
+			debt_system.game_victory.connect(_on_game_victory)
+	
+	# 【新增】连接银行系统信号
+	if bank_system:
+		if bank_system.has_signal("loan_due_check"):
+			bank_system.loan_due_check.connect(_on_loan_due_check)
 
 func load_config():
 	"""加载游戏配置"""
@@ -235,6 +246,26 @@ func advance_sub_round():
 
 func is_final_round() -> bool:
 	return current_round >= MAJOR_ROUNDS and current_sub_round >= SUB_ROUNDS_PER_MAJOR
+	
+# 统一的游戏结束检查函数
+func check_game_end_conditions():
+	"""统一检查所有游戏结束条件"""
+	# 检查压力爆表
+	if stress_system and stress_system.current_stress >= stress_system.max_stress:
+		trigger_game_over("压力爆表")
+		return true
+	
+	# 检查债务违约
+	if debt_system and debt_system.has_method("check_debt_default"):
+		if debt_system.check_debt_default():
+			return true
+	
+	# 检查回合用尽
+	if current_round > MAJOR_ROUNDS:
+		trigger_game_over("max_rounds")
+		return true
+	
+	return false
 
 # 在 global.gd 中简化 trigger_game_over 函数
 
@@ -339,8 +370,23 @@ func _on_stress_effect_changed(distortion: float, filter: float):
 func _on_stress_max_reached():
 	stress_max_reached.emit()
 
-# === 保存/加载方法 ===
-func save_game():
+# 【新增】债务违约信号处理
+func _on_debt_default(round_number: int, target_amount: int, paid_amount: int):
+	"""处理债务违约"""
+	trigger_game_over("债务违约")
+
+# 【新增】游戏胜利信号处理
+func _on_game_victory():
+	"""处理游戏胜利"""
+	trigger_game_over("victory")
+
+# 【新增】贷款到期检查信号处理
+func _on_loan_due_check(loan_data: Dictionary):
+	"""处理贷款到期无法偿还"""
+	trigger_game_over("贷款违约")
+
+# === 保存/加载方法 ===  暂时没有
+'''func save_game():
 	"""保存游戏状态"""
 	var save_data = {
 		"current_round": current_round,
@@ -366,7 +412,7 @@ func load_game(save_data: Dictionary):
 	
 	round_changed.emit(current_round, current_sub_round)
 	game_state_changed.emit(game_state, "loading")
-	save_loaded.emit()
+	save_loaded.emit()'''
 
 # === 工具方法 ===
 func get_system_ready() -> bool:

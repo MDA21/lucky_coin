@@ -86,6 +86,16 @@ func _on_loan_view_closed():
 		current_loan_popup.queue_free()
 		current_loan_popup = null
 
+# 显示最后一回合提示
+func _show_final_round_notification():
+	"""
+	显示最后一回合无法贷款的提示
+	"""
+	Global.show_notification("最后一回合无法贷款！银行已关闭")
+
+# 检查是否最后一回合
+func _is_final_round() -> bool:
+	return Global.current_round >= 6  # 第6大回合为最后一回合
 
 # --- 初始化 ---
 
@@ -106,6 +116,12 @@ func _on_door_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: i
 	"""
 	# 仅处理鼠标左键按下事件
 	if not (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed):
+		return
+		
+	# 【新增】如果是最后一回合，显示提示并阻止交互
+	if _is_final_round():
+		_show_final_round_notification()
+		get_viewport().set_input_as_handled()
 		return
 		
 	# 如果弹窗正在显示，阻止门区域的交互

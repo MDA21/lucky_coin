@@ -540,7 +540,7 @@ libraries = {
 }
 
 [node name="LeverSprite" type="AnimatedSprite2D" parent="InteractionRoot/Lever"]
-position = Vector2(4760, -1900)
+position = Vector2(1300, 1540)
 scale = Vector2(5, 5)
 sprite_frames = ExtResource("3_6xjl1")
 animation = &"pull_down"

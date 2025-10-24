@@ -15,9 +15,10 @@ func _ready():
 	GameManager.bank_system = self
 	var config = _load_config()
 	if config:
-		savings_interest_rate = config.bank_system.savings_interest_rate
+		#无存款功能 savings_interest_rate = config.bank_system.savings_interest_rate 
 		loan_interest_rate = config.bank_system.loan_interest_rate
 
+'''
 func deposit(amount: float):
 	var purpose = "deposit"
 	if Global.spend_money(amount,purpose):
@@ -32,15 +33,19 @@ func withdraw(amount: float):
 		Global.show_notification("取款成功: %s 元" % amount)
 		bank_data_updated.emit(savings)
 	else:
-		Global.show_notification("存款不足！")
+		Global.show_notification("存款不足！")'''
+#抛弃存款功能
 
 func take_loan(amount: float, rounds_to_repay: int):
+	if Global.current_round >= 6:  # 假设6是最后一回合
+		Global.show_notification("最后一回合无法贷款！")
+		return
 	Global.add_money(amount, "loan", true)  # is_loan = true
 	# 创建贷款记录
 	var loan_data = {
 		"amount": amount,
 		"total_repayment": amount * (1 + loan_interest_rate),
-		"remaining_rounds": 6,  # 6个小回合后偿还
+		"remaining_rounds": 4,  # 4个小回合后偿还
 		"stress_value": _calculate_loan_stress(amount)  # 根据金额计算压力值
 	}
 	active_loans.append(loan_data)
@@ -48,8 +53,9 @@ func take_loan(amount: float, rounds_to_repay: int):
 	# 增加压力值
 	Global.stress_system.change_stress(loan_data.stress_value, "loan_taken")
 	
-	Global.show_notification("获得贷款: %s 元, 需在6回合内偿还 %s 元" % [amount, loan_data.total_repayment])
+	Global.show_notification("获得贷款: %s 元, 需在4回合内偿还 %s 元" % [amount, loan_data.total_repayment])
 	loan_added.emit(loan_data)
+
 
 func _calculate_loan_stress(amount: float) -> int:
 	stress_system = Global.get_stress_system()
@@ -70,14 +76,18 @@ func _calculate_loan_stress(amount: float) -> int:
 	return stress_value
 
 func process_end_of_round():
-	var interest = savings * savings_interest_rate
+	'''var interest = savings * savings_interest_rate
 	if interest > 0:
 		savings += interest
 		Global.show_notification("获得存款利息: %s 元" % interest.snapped(0.01))
-		bank_data_updated.emit(savings)
+		bank_data_updated.emit(savings)'''
 		
-		# 更新所有活跃贷款的剩余回合数
-		_update_loans_rounds()
+	# 更新所有活跃贷款的剩余回合数
+	_update_loans_rounds()
+		#无存款功能
+		
+func can_take_loan() -> bool:
+	return Global.current_round < 6 
 
 # 更新贷款回合数并检查到期贷款
 func _update_loans_rounds():
@@ -124,8 +134,8 @@ func get_due_loans() -> Array:
 			due_loans.append(loan)
 	return due_loans
 
-# 提前偿还贷款（可选功能）
-func repay_loan_early(loan_index: int):
+# 提前偿还贷款（可选功能） 不选
+'''func repay_loan_early(loan_index: int):
 	if loan_index < 0 or loan_index >= active_loans.size():
 		return false
 	
@@ -141,7 +151,7 @@ func repay_loan_early(loan_index: int):
 		Global.show_notification("提前偿还贷款: %s 元" % repayment_amount)
 		return true
 	
-	return false
+	return false'''
 
 # 获取活跃贷款列表（用于UI显示）
 func get_active_loans() -> Array:

@@ -44,6 +44,7 @@ class Currency:
 var player_currency: Currency
 var total_earned: int = 0
 var total_spent: int = 0
+var growth_rate: float = 0.05  #普通金币每回合自动增长5%
 
 signal money_changed(normal_money: int, loan_money: int, total_money: int)
 signal money_earned(amount: int, source: String, is_loan_money: bool)
@@ -52,7 +53,18 @@ signal money_spent(amount: int, purpose: String, used_loan_money: bool)
 func _ready():
 	player_currency = Currency.new()
 	# 初始资金
-	player_currency.normal_money = 100
+	player_currency.normal_money = 1000
+
+#资金自动增长
+func apply_growth():
+	var growth_amount = int(player_currency.normal_money * growth_rate)
+	if growth_amount > 0:
+		player_currency.normal_money += growth_amount
+		total_earned += growth_amount
+		money_changed.emit(player_currency.normal_money, player_currency.loan_money, player_currency.get_total())
+		money_earned.emit(growth_amount, "interest", false)
+		return growth_amount
+	return 0
 
 func add_money(amount: int, source_type: String = "normal", is_loan: bool = false):
 	if amount <= 0:
