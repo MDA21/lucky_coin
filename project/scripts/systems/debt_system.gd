@@ -141,7 +141,7 @@ func check_debt_default():
 	currency_system = Global.get_currency_system()
 	stress_system = Global.get_stress_system()
 	# 第一个大回合不检查违约，给玩家适应期
-	if current_major_round <= 1:
+	if current_major_round <= 0:
 		return false
 	
 	var target = get_current_debt_target()

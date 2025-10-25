@@ -396,9 +396,11 @@ func _load_game_config() -> Dictionary:
 # is_game_won()函数，用于查看游戏是否胜利，从而改变场景状态
 func is_game_won() -> bool:
 	'''
-	根据金币判断是否胜利
+	根据债务系统判断是否胜利 - 所有6个大回合的债务都偿还完成
 	'''
-	return Global.current_money >= Global.required_gold
+	if debt_system and debt_system.has_method("are_all_debts_completed") and Global.current_round == 6:
+		return debt_system.are_all_debts_completed()
+	return false
 	
 # 在出口场景中调用，用于游戏胜利并返回主菜单
 func process_game_victory():

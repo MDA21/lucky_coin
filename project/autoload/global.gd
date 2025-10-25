@@ -9,7 +9,7 @@ var notification_scene = preload("res://project/scenes/ui/NotificationPopup.tscn
 var current_money: int = 0     # 玩家的现金
 var current_loan: int = 0		  # 玩家当前的还款数
 var current_stress: int = 0    # 玩家的压力值
-var required_gold: int = 100   # 假设的胜利目标金币
+var required_gold: int = 360   # 其实就是第六回合的还款数目
 
 # 系统引用缓存（通过GameManager获取，这里只是缓存）
 var game_manager = null
@@ -20,7 +20,7 @@ var currency_system = null
 var shop_system = null
 var bank_system = null
 var event_system = null
-var  pattern_system = null
+var pattern_system = null
 
 # 全局游戏状态
 const MAJOR_ROUNDS: int = 6
@@ -436,12 +436,3 @@ func print_debug_info():
 	if stress_system:
 		var stress = get_stress_info()
 		print("Stress: %d/%d (%s)" % [stress.current_stress, stress.max_stress, stress.stress_level])
-
-# is_game_won()函数，用于查看游戏是否胜利，从而改变场景状态
-func is_game_won() -> bool:
-	'''
-	根据债务系统判断是否胜利 - 所有6个大回合的债务都偿还完成
-	'''
-	if debt_system and debt_system.has_method("are_all_debts_completed"):
-		return debt_system.are_all_debts_completed()
-	return false
