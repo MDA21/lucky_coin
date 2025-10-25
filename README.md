@@ -4,6 +4,68 @@
 
 **Author：Ziggy Stardust**
 
+
+
+## 最终说明
+
+### 关于商店
+
+不管是实现还是没实现的物品，我都没有把他们从商店下架，方便展示刷新机制，也可以购买，但是不会生效
+
+未实现的物品清单
+
+```
+
+	"metal_detector": {
+	  "name": "金属探测器",
+	  "description": "显示每个通道内不同硬币的组成比例",
+	  "price": 100,
+	  "texture": "res://project/assets/item/metal_detector.png",
+	  "effect_type": "permanent",
+	  "effect": "show_channel_distribution"
+	},    原因：现在鼠标停留在通道上就可以显示比例
+	"talisman": {
+	  "name": "护身符",
+	  "description": "限次道具，二次筛选时有33%概率触发幸运值+5，最多触发8次",
+	  "price": 600,
+	  "texture": "res://project/assets/item/talisman.png",
+	  "effect_type": "limited_use",
+	  "max_uses": 8,
+	  "effect": "increase_luck",
+	  "effect_value": {"probability": 0.33, "luck_bonus": 5}
+	},     原因：无幸运值
+	"abyss_eye": {
+	  "name": "深渊之眼",
+	  "description": "限次道具，小回合结束后有20%概率触发额外小回合，最多触发3次",
+	  "price": 450,
+	  "texture": "res://project/assets/item/abyss_eye.png",
+	  "effect_type": "limited_use",
+	  "max_uses": 3,
+	  "effect": "extra_sub_round",
+	  "effect_value": {"probability": 0.20}
+	},     原因：逻辑很复杂，会影响所有系统的回合末结算
+	"digital_totem": {
+	  "name": "数字图腾",
+	  "description": "三四五连的图案倍率+0.5",
+	  "price": 350,
+	  "texture": "res://project/assets/item/digital_totem.png",
+	  "effect_type": "permanent",
+	  "effect": "increase_basic_pattern_multiplier",
+	  "effect_value": 0.5
+	},      原因：不是图案结算机制，其他的提升图案出现机制我都是直接加在出现概率上，但提升特定图案做不到
+	"originium_tech": {
+	  "name": "源石科技",
+	  "description": "一次性道具，所有充能道具立刻准备就绪",
+	  "price": 666,
+	  "texture": "res://project/assets/item/originium_tech.png",
+	  "effect_type": "consumable",
+	  "max_uses": 1,
+	  "effect": "recharge_all_items"
+	}
+```
+
+
+
 ## 更新日志
 
 **2025 10.25 Ziggy**
@@ -169,212 +231,5 @@ lucky_coin/
 
 
 
-- ## 已完成的核心系统功能与责任
+- ## 
 
-  ### ✅ 已完成的系统
-
-  #### 1. **GameManager** (`scripts/systems/game_manager.gd`)
-  - **责任**: 游戏总控制器，协调所有子系统
-  - **功能**: 
-	- 初始化所有子系统
-	- 管理游戏状态（开始、进行中、结束）
-	- 提供系统获取接口
-	- 场景切换和视图管理
-
-  #### 2. **CoinSystem** (`scripts/systems/coin_system.gd`)
-  - **责任**: 硬币生成和概率管理
-  - **功能**:
-	- 管理硬币山分布（6种硬币类型）
-	- 实现条件概率：硬币山 → 通道 → 硬币板
-	- 处理硬币两面性和高价值概率
-	- 应用增益效果到硬币分布
-
-  #### 3. **ChannelSystem** (`scripts/systems/channel_system.gd`)
-  - **责任**: 通道解锁和管理
-  - **功能**:
-	- 管理递增解锁费用
-	- 处理通道的解锁、抛弃状态
-	- 与硬币系统集成填充通道
-
-  #### 4. **PatternSystem** (`scripts/systems/pattern_system.gd`)
-  - **责任**: 图案识别和检测
-  - **功能**:
-	- 检测11种图案组合
-	- 实现排除规则（基础图案算大不算小）
-	- 提供图案数据查询
-
-  #### 5. **ComboCalculator** (`scripts/systems/combo_calculator.gd`)
-  - **责任**: 收益和压力结算计算
-  - **功能**:
-	- 计算单个/多个通道的结算结果
-	- 应用特殊规则（血币+骷髅币惩罚）
-	- 分离真硬币收益和图案收益
-
-  #### 6. **CurrencySystem** (`scripts/systems/currency_system.gd`)
-  - **责任**: 货币管理和区分
-  - **功能**:
-	- 区分贷款币和普通币
-	- 管理货币来源和消费策略
-	- 银行存储限制（贷款币不能存）
-	- 统一的货币交易接口
-
-  #### 7. **StressSystem** (`scripts/systems/stress_system.gd`)
-  - **责任**: 压力值管理和视觉效果
-  - **功能**:
-	- 压力值计算和限制
-	- 压力触发条件实现
-	- 视觉效果（扭曲、滤镜）
-	- 贷款压力管理
-
-  #### 8. **BankSystem** (`scripts/systems/bank_system.gd`)
-  - **责任**: 银行和贷款管理
-  - **功能**:
-	- 存款利息计算
-	- 短期/长期贷款管理
-	- 还款计划和压力减少
-	- 贷款违约处理
-
-  #### 9. **Global** (`autoload/global.gd`)
-  - **责任**: 全局接口和信号中心
-  - **功能**:
-	- 系统引用缓存和转发
-	- 全局信号中心
-	- 便捷方法提供
-	- 游戏状态管理
-
-  ### ⏳ 待更新/创建的系统
-
-  #### 1. **DebtSystem** (`scripts/systems/debt_system.gd`)
-  - **责任**: 债务目标管理和检查
-  - **待完成**:
-	- 实现6个大回合债务目标
-	- 集成新货币系统检查偿还能力
-	- 债务结算和游戏结束条件
-
-  #### 2. **ShopSystem** (`scripts/systems/shop_system.gd`)
-  - **责任**: 商店道具管理和效果
-  - **待完成**:
-	- 更新道具效果匹配新系统
-	- 实现刷新机制（初始20\$，×1.5递增）
-	- 道具分类管理（永久、充能、限次、一次性）
-
-  #### 3. **EventSystem** (`scripts/systems/event_system.gd`)
-  - **责任**: 随机增益事件管理
-  - **待完成**:
-	- 实现5个增益选择（3选1）
-	- 增益分类实现（图案概率、价值、压力、银行、道具）
-	- 增益效果应用
-
-  #### 4. **UI系统** (`scripts/ui/`)
-  - **责任**: 用户界面和HUD
-  - **待完成**:
-	- 主UI界面 (`main_ui.gd`)
-	- HUD控制 (`hud.gd`)
-	- 货币区分显示
-	- 压力视觉效果集成
-
-  ## 剩余工作优先级
-
-  ### 🔴 高优先级（核心游戏循环）
-
-  1. **更新债务系统** - 实现回合债务目标
-  2. **更新商店系统** - 适配新道具效果
-  3. **创建事件系统** - 随机增益机制
-  4. **主UI/HUD** - 游戏状态显示
-
-  ### 🟡 中优先级（游戏流程）
-
-  5. **回合管理系统** - 6大回合×4小回合流程
-  6. **推币机流程完善** - 倍率选择、通道观察
-  7. **资源创建** - 硬币纹理、UI素材
-
-  ### 🟢 低优先级（完善功能）
-
-  8. **音频系统** - 音效和背景音乐
-  9. **保存/加载系统** - 游戏进度管理
-  10. **优化和调试** - 平衡性和性能
-
-  ## 系统依赖关系
-
-  ```
-  GameManager (协调中心)
-	  ├── CoinSystem (硬币生成)
-	  │   └── 被: ChannelSystem, PatternGrid 调用
-	  ├── ChannelSystem (通道管理) 
-	  │   └── 被: SlotMachineView 调用
-	  ├── PatternSystem (图案识别)
-	  │   └── 被: ComboCalculator 调用
-	  ├── ComboCalculator (收益计算)
-	  │   ├── 依赖: PatternSystem, StressSystem
-	  │   └── 被: SlotMachineView 调用
-	  ├── CurrencySystem (货币管理)
-	  │   └── 被: 所有经济相关系统调用
-	  ├── StressSystem (压力管理)
-	  │   └── 被: ComboCalculator, BankSystem 调用
-	  ├── BankSystem (银行系统)
-	  │   ├── 依赖: CurrencySystem, StressSystem
-	  │   └── 被: BankView 调用
-	  ├── DebtSystem (债务系统) [待更新]
-	  ├── ShopSystem (商店系统) [待更新]
-	  └── EventSystem (事件系统) [待创建]
-  ```
-
-  ## 下一步建议
-
-  建议按以下顺序完成剩余工作：
-
-  1. **先完成债务系统更新** - 这是游戏进度控制的核心
-  2. **然后更新商店系统** - 提供玩家成长路径  
-  3. **创建事件系统** - 增加游戏随机性和重玩价值
-  4. **最后完善UI系统** - 提供完整的用户体验
-
-  每个系统完成后都可以进行独立测试，确保核心机制正确后再进行集成。
-
-## 数据文件内容
-
-### **data/coin_types.json**
-
-我暂时填充了两种
-
-```json
-{
-  "real_coin": {
-	"name": "真硬币",
-	"base_value": 1,
-	"texture": "res://assets/coins/real.png",
-	"is_direct_cash": true
-  },
-  "clover_coin": {
-	"name": "三叶草币",
-	"texture": "res://assets/coins/clover.png",
-	"patterns": ["weed", "clover", "four_leaf_clover"],
-	"pattern_values": [1, 2, 5],
-	"combo_settings": {
-	  "same_type_multiplier": 1.2,
-	  "min_combo_count": 3
-	}
-  }
-  // ... 其他硬币类型
-}
-```
-
-### **data/shop_items.json**
-
-- 道具名称、描述、价格
-- 道具效果类型和数值
-- 使用限制（次数、冷却）
-- 图标路径和稀有度
-
-### **data/debt_config.json**
-
-- 债务周期设置
-- 偿还目标计算公式
-- 利息率和惩罚规则
-- 游戏结束条件
-
-### **data/game_config.json**
-
-- 游戏基础参数
-- 压力系统配置
-- 视觉和音频设置
-- 平衡性参数

@@ -53,7 +53,7 @@ signal money_spent(amount: int, purpose: String, used_loan_money: bool)
 func _ready():
 	player_currency = Currency.new()
 	# 初始资金
-	player_currency.normal_money = 1000
+	player_currency.normal_money = 50
 
 #资金自动增长
 func apply_growth():

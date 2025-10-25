@@ -96,6 +96,9 @@ var activated_channels = []
 var pattern_boards = {}
 var total_settlement_money: int = 0
 
+# 新增：拉杆状态控制
+var lever_pulled: bool = false
+var channels_interaction_enabled: bool = false
 
 # -------------------- 3. 生命周期函数 (_ready) --------------------
 
@@ -217,6 +220,7 @@ func _set_channel_interaction_enabled(enabled: bool):
 	for id in channel_elements:
 		channel_elements[id].area.monitorable = enabled
 		print("Channel ", id, " monitorable set to: ", enabled)
+		channels_interaction_enabled = true
 	
 	center_button.disabled = !enabled 
 	print("Center Button disabled set to: ", !enabled)
@@ -317,6 +321,8 @@ func _on_lever_button_pressed():
 	
 	_set_channel_interaction_enabled(true)
 	center_button.disabled = false
+	lever_pulled = true
+
 	
 	_initialize_costs()
 	print("步骤 2 完成: 交互启用，费用显示。")
@@ -326,6 +332,11 @@ func _on_lever_button_pressed():
 
 
 func _on_channel_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int, channel_id: String):
+	if not lever_pulled or not channels_interaction_enabled:
+		Global.show_notification("请先拉动拉杆抽取硬币")
+		get_viewport().set_input_as_handled()
+		return
+	
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		
 		channel_elements[channel_id].area.monitorable = false
@@ -371,11 +382,12 @@ func _on_center_button_pressed():
 	
 	_start_reset_and_cleanup()
 
-# [TODO]硬币板的结算
+# [DONE]硬币板的结算
 # 占位函数：执行游戏核心操作 (留白)
 func _perform_game_operation():
 	print("--- 步骤 4: 执行核心游戏操作 (占位符) ---")
 	total_settlement_money = 0
+	var total_stress_change = 0
 	
 	# 显示所有激活通道的硬币板
 	_set_all_pattern_boards_visible(false)  # 先隐藏所有
@@ -389,11 +401,14 @@ func _perform_game_operation():
 	# 计算结算结果
 	await calculate_settlement_results()
 	
+	total_stress_change = _calculate_stress_from_settlement()
+	
 	# 显示总结算结果
 	await show_total_settlement()
 	
 	if game_manager and game_manager.has_method("set_settlement_data"):
-		game_manager.set_settlement_data(total_settlement_money, 0)  # 假设压力变化为0
+		game_manager.set_settlement_data(total_settlement_money, total_stress_change)
+	
 	
 	print("--- 核心游戏操作完成，结算金额: ", total_settlement_money, " ---")
 
@@ -413,6 +428,26 @@ func calculate_settlement_results():
 			
 			# 可以在这里高亮显示图案（可选）
 			_highlight_patterns_on_board(board, channel_result)
+			
+func _calculate_stress_from_settlement() -> int:
+	var stress_change = 0
+	
+	# 根据收益情况计算压力变化
+	if total_settlement_money <= 0:
+		# 无收益或亏损，增加压力
+		stress_change = 10
+	elif total_settlement_money < 50:
+		# 收益较低，小幅减压
+		stress_change = -5
+	else:
+		# 收益较高，减压
+		stress_change = -10
+	
+	# 激活通道越多，减压效果越好
+	var channel_bonus = activated_channels.size() * 2
+	stress_change -= channel_bonus
+	
+	return stress_change
 
 func _calculate_channel_result(coin_grid: Array, channel_id: String) -> Dictionary:
 	# 使用combo_calculator计算通道结果
@@ -479,6 +514,9 @@ func _start_reset_and_cleanup():
 	_set_all_tooltip_panels_visible(false)
 	tooltip_layer.visible = false
 	
+	# 3. 重置拉杆状态
+	lever_pulled = false
+	channels_interaction_enabled = false
 	
 	# 最后清理 activated_channels 列表，准备下次进入
 	activated_channels.clear() 
@@ -491,6 +529,9 @@ func _start_reset_and_cleanup():
 # -------------------- 6. Tooltip 信号响应函数 --------------------
 
 func _handle_mouse_entered(channel_id: String):
+	if not lever_pulled:
+		return
+	
 	var target_bar: Control
 	var target_tooltip_panel: Panel
 	

@@ -229,16 +229,16 @@ func advance_sub_round():
 		current_round += 1
 
 	# 同步债务系统的回合状态
-	if debt_system and debt_system.has_method("advance_round"):
-		var success = debt_system.advance_round()
-		if not success:
-			# 债务系统处理了游戏结束，不需要再次处理
-			return
-	else:
-		# 如果没有债务系统，使用原来的逻辑
-		if current_round > MAJOR_ROUNDS:
-			trigger_game_over("max_rounds")
-			return
+		if debt_system and debt_system.has_method("advance_major_round"):
+			var success = debt_system.advance_major_round()
+			if not success:
+				# 债务系统处理了游戏结束，不需要再次处理
+				return
+		else:
+			# 如果没有债务系统，使用原来的逻辑
+			if current_round > MAJOR_ROUNDS:
+				trigger_game_over("max_rounds")
+				return
 
 	# 通知变更并开启新小回合
 	round_changed.emit(current_round, current_sub_round)

@@ -22,7 +22,7 @@ extends Control
 @onready var tooltip_panel: Panel = $CloseUpView/TooltipPanel
 
 var currency_system:Node = null
-var refresh_cost = 20
+var refresh_cost = 6
 
 
 # --- 状态 ---

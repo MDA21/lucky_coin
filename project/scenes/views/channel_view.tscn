@@ -703,7 +703,6 @@ offset_right = 40.0
 offset_bottom = 40.0
 
 [node name="PatternBoard_A" type="GridContainer" parent="InteractionRoot/PatternBoards"]
-modulate = Color(0.43761137, 0.44286326, 0.45727718, 1)
 layout_mode = 0
 offset_left = 200.0
 offset_top = 120.0
@@ -712,7 +711,6 @@ offset_bottom = 370.0
 script = ExtResource("10_tkvgh")
 
 [node name="PatternBoard_B" type="GridContainer" parent="InteractionRoot/PatternBoards"]
-modulate = Color(0.48570347, 0.48570353, 0.48570347, 1)
 layout_mode = 0
 offset_left = 420.0
 offset_top = 120.0
@@ -721,7 +719,6 @@ offset_bottom = 370.0
 script = ExtResource("10_tkvgh")
 
 [node name="PatternBoard_C" type="GridContainer" parent="InteractionRoot/PatternBoards"]
-modulate = Color(0.4392157, 0.44313726, 0.45882353, 1)
 layout_mode = 0
 offset_left = 640.0
 offset_top = 120.0
@@ -730,7 +727,6 @@ offset_bottom = 370.0
 script = ExtResource("10_tkvgh")
 
 [node name="PatternBoard_D" type="GridContainer" parent="InteractionRoot/PatternBoards"]
-modulate = Color(0.4392157, 0.44313726, 0.45882353, 1)
 layout_mode = 0
 offset_left = 860.0
 offset_top = 120.0

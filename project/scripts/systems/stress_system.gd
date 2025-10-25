@@ -17,6 +17,14 @@ func _ready():
 	# 初始压力
 	current_stress = 10
 	update_stress_effects()
+	_connect_global_signals()
+	
+func _connect_global_signals():
+	"""连接全局信号"""
+	if Global.has_signal("money_changed"):
+		Global.money_changed.connect(_on_global_money_changed)
+	if Global.has_signal("round_changed"):
+		Global.round_changed.connect(_on_global_round_changed)
 
 func change_stress(amount: int, source: String = "unknown"):
 	var old_stress = current_stress
@@ -35,7 +43,7 @@ func change_stress(amount: int, source: String = "unknown"):
 	
 	stress_changed.emit(current_stress, old_stress, amount)
 	update_stress_effects()
-	
+	show_stress_warning_if_needed(current_stress)
 	# 检查压力爆表
 	if current_stress >= max_stress:
 		stress_max_reached.emit()
@@ -234,20 +242,48 @@ var stress_reduction_multiplier: float = 1.0
 var loan_stress_multiplier: float = 1.0
 var pattern_stress_reduction_multiplier: float = 1.0
 
-func set_stress_growth_multiplier(multiplier: float):
-	"""设置压力增长倍率（事件效果）"""
-	stress_growth_multiplier = multiplier
+# 全局信号处理
+func _on_global_money_changed(normal_money: int, loan_money: int, total_money: int):
+	"""当金钱变化时，检查是否需要增加压力"""
+	# 如果贷款货币比例过高，增加压力
+	var loan_ratio = float(loan_money) / float(total_money) if total_money > 0 else 0.0
+	if loan_ratio > 0.7:  # 贷款占比超过70%
+		change_stress(5, "high_loan_ratio")
+	elif loan_ratio > 0.5:  # 贷款占比超过50%
+		change_stress(2, "medium_loan_ratio")
 
-func set_stress_reduction_multiplier(multiplier: float):
-	"""设置减压效果倍率（事件效果）"""
-	stress_reduction_multiplier = multiplier
+func _on_global_round_changed(major_round: int, sub_round: int):
+	"""当回合变化时，检查是否需要增加压力"""
+	# 随着回合推进，基础压力逐渐增加
+	if major_round > 3:  # 第4回合开始
+		var round_stress = (major_round - 3) * 2  # 每回合增加2点基础压力
+		change_stress(round_stress, "round_progression")
+	
+	# 如果是大回合的最后一个小回合，检查债务压力
+	var debt_system = Global.get_debt_system()
+	if debt_system and sub_round >= 4:  # 最后一个小回合
+		var debt_progress = debt_system.get_debt_progress()
+		var progress_percentage = debt_progress.get("progress_percentage", 0.0)
+		
+		if progress_percentage < 0.5:  # 债务完成度低于50%
+			change_stress(10, "debt_pressure")
+		elif progress_percentage < 0.8:  # 债务完成度低于80%
+			change_stress(5, "debt_pressure")
 
-func set_loan_stress_multiplier(multiplier: float):
-	"""设置贷款压力倍率（事件效果）"""
-	loan_stress_multiplier = multiplier
+# 新增方法：获取压力警告级别
+func get_stress_warning_level() -> String:
+	"""获取压力警告级别，用于UI显示不同的警告颜色"""
+	var percentage = get_stress_percentage()
+	if percentage >= 0.9:
+		return "critical"
+	elif percentage >= 0.75:
+		return "high"
+	elif percentage >= 0.5:
+		return "medium"
+	else:
+		return "low"
 
-func set_pattern_stress_reduction_multiplier(multiplier: float):
-	"""设置图案减压倍率（事件效果）"""
-	pattern_stress_reduction_multiplier = multiplier
-
-# 删除重复的事件效果方法，已合并到上面的统一方法中
+# 新增方法：显示压力警告通知
+func show_stress_warning_if_needed(stress:int):
+	if stress >= 75:
+		Global.show_notification("压力过高！请注意控制")

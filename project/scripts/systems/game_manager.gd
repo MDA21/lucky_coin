@@ -173,6 +173,9 @@ func start_new_game():
 	# 初始化债务系统
 	if debt_system and debt_system.has_method("start_new_game"):
 		debt_system.start_new_game()
+		
+	# 【新增】初始化通道数据
+	initialize_channel_data()
 
 	#2. 更新游戏状态
 	current_state = GameState.IN_GAME
@@ -311,11 +314,17 @@ func end_player_turn():
 			
 	if Global.check_game_end_conditions():
 		return  # 如果游戏结束，不再推进回合
+	
+	
+	if Global.current_sub_round == 1 and Global.current_round > 1:
+		Global.show_notification("第 %d 大回合开始" % Global.current_round)
+	else:
+		Global.show_notification("第 %d 小回合结束" % Global.current_sub_round)
 		
 	# 推进到下一个小回合（6大回合×4小回合）
 	Global.advance_sub_round()
 	
-	Global.show_notification("第 %d 小回合结束" % Global.current_sub_round)
+	
 	
 func _on_global_game_over(reason: String):
 	"""
@@ -323,7 +332,36 @@ func _on_global_game_over(reason: String):
 	"""
 	current_state = GameState.GAME_OVER
 	print("游戏结束，原因: ", reason)
+	# 显示游戏结束消息
+	_show_game_over_message(reason)
 
+func _show_game_over_message(reason: String):
+	"""显示游戏结束消息并返回主菜单"""
+	var message = _get_game_over_message(reason)
+	Global.show_notification(message)
+	
+	# 创建计时器，等待几秒后返回主菜单
+	var timer = get_tree().create_timer(3.0)
+	timer.timeout.connect(_return_to_main_menu_after_game_over)
+
+func _get_game_over_message(reason: String) -> String:
+	"""根据游戏结束原因返回对应的消息"""
+	match reason:
+		"债务违约", "debt_default":
+			return "债务违约！你未能按时偿还债务，游戏结束"
+		"压力爆表", "stress_max":
+			return "压力爆表！你的精神崩溃了，游戏结束"
+		"贷款违约", "loan_default":
+			return "贷款违约！你未能偿还贷款，游戏结束"
+		"回合用尽", "max_rounds":
+			return "时间耗尽！你未能完成所有债务，游戏结束"
+		_:
+			return "游戏结束: " + reason
+
+func _return_to_main_menu_after_game_over():
+	"""游戏结束后返回主菜单"""
+	return_to_main_menu()
+	
 func return_to_main_menu():
 	"""
 	让玩家返回主菜单界面。
@@ -484,29 +522,71 @@ func _unhandled_input(event: InputEvent):
 		get_viewport().set_input_as_handled()
 
 # [TODO] 获取概率的四个函数
+# [DONE] 获取概率的四个函数 - 基于coin_system的实际数据
 func _get_channel_a_data() -> Array:
-	# 
-	# 在实际的游戏管理器中，您应该在这里实现逻辑来获取或生成 A 通道的真实数据。
-	# 
-	# 占位符返回 (请替换为实际逻辑)
-	return [0.1, 0.2, 0.3, 0.1, 0.1, 0.2]
+	"""获取通道A的真实硬币分布数据"""
+	return _get_channel_distribution_data("A")
 
 func _get_channel_b_data() -> Array:
-	# 占位符返回 (请替换为实际逻辑)
-	return [0.15, 0.15, 0.2, 0.1, 0.2, 0.2]
+	"""获取通道B的真实硬币分布数据"""
+	return _get_channel_distribution_data("B")
 
 func _get_channel_c_data() -> Array:
-	# 占位符返回 (请替换为实际逻辑)
-	return [0.05, 0.05, 0.5, 0.1, 0.1, 0.2]
+	"""获取通道C的真实硬币分布数据"""
+	return _get_channel_distribution_data("C")
 
 func _get_channel_d_data() -> Array:
-	# 占位符返回 (请替换为实际逻辑)
-	return [0.4, 0.1, 0.1, 0.1, 0.1, 0.2]
+	"""获取通道D的真实硬币分布数据"""
+	return _get_channel_distribution_data("D")
+
+func _get_channel_distribution_data(channel_id: String) -> Array:
+	"""
+	获取指定通道的真实硬币分布数据
+	返回数组顺序: [真硬币, 太阳币, 月亮币, 星星币, 骷髅币, 血币] 的概率(0-1之间)
+	"""
+	if not coin_system:
+		push_warning("Coin system not available, returning default distribution")
+		return _get_default_channel_data(channel_id)
 	
-# [TODO] 获取后三个通道开销的函数
+	# 使用新的统计方法获取实际分布
+	if coin_system.has_method("get_channel_statistical_distribution"):
+		return coin_system.get_channel_statistical_distribution(channel_id)
+	else:
+		push_warning("Coin system doesn't have statistical distribution method")
+		return _get_default_channel_data(channel_id)
+
+func _get_default_channel_data(channel_id: String) -> Array:
+	"""获取默认的通道数据（备用方案）"""
+	match channel_id:
+		"A":
+			return [0.1, 0.2, 0.3, 0.1, 0.1, 0.2]
+		"B":
+			return [0.15, 0.15, 0.2, 0.1, 0.2, 0.2]
+		"C":
+			return [0.05, 0.05, 0.5, 0.1, 0.1, 0.2]
+		"D":
+			return [0.4, 0.1, 0.1, 0.1, 0.1, 0.2]
+		_:
+			return [0.166, 0.166, 0.166, 0.166, 0.166, 0.166]  # 平均分布
+
+# [DONE] 初始化通道数据
+func initialize_channel_data():
+	"""初始化所有通道的硬币分布数据"""
+	if not coin_system:
+		push_warning("Coin system not available for channel initialization")
+		return
+		
+	# 初始化所有通道
+	for channel_id in ["A", "B", "C", "D"]:
+		coin_system.fill_channel_from_mountain(channel_id, 100)
+		print("Initialized channel %s with coin distribution" % channel_id)
+	
+
+	
+# [DONE] 获取后三个通道开销的函数
 func _get_channel_costs() -> Array:
 	# 占位符
-	return [100,200,300]
+	return [20,40,60]
 
 # [DONE] 告知gamemanager该通道被选择
 func _handle_channel_selected(channel_id: String, cost: int):
