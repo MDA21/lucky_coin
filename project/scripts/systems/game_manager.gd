@@ -367,7 +367,8 @@ func return_to_main_menu():
 	让玩家返回主菜单界面。
 	"""
 	current_state = GameState.MAIN_MENU
-	get_tree().change_scene_to_file("res://project/scenes/views/main_menu_view.tscn")
+	#get_tree().change_scene_to_file("res://project/scenes/views/main_menu_view.tscn")
+	_change_view(0)
 	
 '''func _on_game_over(reason: String):
 	"""
