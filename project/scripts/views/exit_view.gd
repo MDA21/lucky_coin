@@ -120,6 +120,6 @@ func _on_remote_door_input_event(_viewport: Node, event: InputEvent, _shape_idx:
 			_show_popup("游戏胜利")
 			
 			# 动作：跳转至某个场景 / 结束游戏 (TODO: 待实现)
-			# game_manager.change_to_end_screen() 
+			game_manager._change_view(0)
 			
 	get_viewport().set_input_as_handled()
