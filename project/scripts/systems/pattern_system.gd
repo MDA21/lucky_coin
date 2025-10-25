@@ -7,7 +7,7 @@ func _ready():
 	load_pattern_config()
 
 func load_pattern_config():
-	var file = FileAccess.open("res://data/pattern_config.json", FileAccess.READ)
+	var file = FileAccess.open("res://project/data/pattern_config.json", FileAccess.READ)
 	if file:
 		pattern_config = JSON.parse_string(file.get_as_text())
 		file.close()

@@ -109,19 +109,24 @@ func _hide_coin_popup():
 	在 2.5s 时被 CoinAnimator 调用。
 	【要求 3: 在弹窗持续约1.5s后，弹窗消失，动画也不可见】
 	"""
+	print("开始隐藏弹窗")
 	
-	print("Hiding!")
-	
+	# 1. 隐藏硬币掉落动画
 	coin_drop_animation.visible = false
-	# 1. 使用 Tween 实现平滑淡出 (0.3秒淡出)
+	
+	# 2. 等待1.5秒让弹窗显示
+	await get_tree().create_timer(1.5).timeout
+	
+	# 3. 使用 Tween 实现平滑淡出 (0.3秒淡出)
 	var tween = create_tween()
 	tween.tween_property(coin_popup, "modulate", Color(1, 1, 1, 0), 0.3)
 	
-	# 2. 等待淡出效果播放完毕
+	# 4. 等待淡出效果播放完毕
 	await tween.finished
 	
-	# 3. 清理弹窗
+	# 5. 清理弹窗
 	coin_popup.visible = false
+	print("弹窗隐藏完成")
 	
 
 func _on_coin_sequence_finished(anim_name: StringName):

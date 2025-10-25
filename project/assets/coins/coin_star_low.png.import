@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://duu3os5px01yq"
-path="res://.godot/imported/coin_sun_high.png-679b2e4fddb1af538a64363f17bdb906.ctex"
+uid="uid://bjlmi5m3asoiu"
+path="res://.godot/imported/coin_star_low.png-f6557bbca3b5fdb6fc8a67b47b1475a6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://project/assets/coin/coin_sun_high.png"
-dest_files=["res://.godot/imported/coin_sun_high.png-679b2e4fddb1af538a64363f17bdb906.ctex"]
+source_file="res://project/assets/coins/coin_star_low.png"
+dest_files=["res://.godot/imported/coin_star_low.png-f6557bbca3b5fdb6fc8a67b47b1475a6.ctex"]
 
 [params]
 

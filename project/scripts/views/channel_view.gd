@@ -62,6 +62,16 @@ var channel_elements = {}
 var channel_bars = {} 
 var tooltip_panels = {} # 确保此变量已在类级别声明
 
+# 硬币板和结算界面
+@onready var pattern_board_a: GridContainer = $"InteractionRoot/PatternBoards/PatternBoard_A"
+@onready var pattern_board_b: GridContainer = $"InteractionRoot/PatternBoards/PatternBoard_B"
+@onready var pattern_board_c: GridContainer = $"InteractionRoot/PatternBoards/PatternBoard_C"
+@onready var pattern_board_d: GridContainer = $"InteractionRoot/PatternBoards/PatternBoard_D"
+
+@onready var settlement_popup: Control = $"InteractionRoot/SettlementPopup"
+@onready var settlement_label: Label = $"InteractionRoot/SettlementPopup/SettlementLabel"
+
+
 
 # -------------------- 2. 常量 (const) 和变量 (var) --------------------
 
@@ -83,6 +93,9 @@ var channel_data = {
 var channel_costs = [0, 0, 0, 0] 
 var activated_channels = []
 
+var pattern_boards = {}
+var total_settlement_money: int = 0
+
 
 # -------------------- 3. 生命周期函数 (_ready) --------------------
 
@@ -91,6 +104,9 @@ func _ready():
 	_init_channel_elements()
 	_init_channel_bars()
 	_init_tooltip_panels()
+	
+	# 初始化硬币板
+	_init_pattern_boards()
 	
 	# 从 GameManager 获取最新的 Channel Data
 	_fetch_and_init_channel_data()
@@ -127,6 +143,24 @@ func _ready():
 
 
 # -------------------- 4. 核心功能函数 --------------------
+func _init_pattern_boards():
+	pattern_boards = {
+		"A": pattern_board_a,
+		"B": pattern_board_b, 
+		"C": pattern_board_c,
+		"D": pattern_board_d
+	}
+	
+	# 初始化所有硬币板为隐藏状态
+	for board in pattern_boards.values():
+		if board:
+			board.visible = false
+
+func _set_all_pattern_boards_visible(is_visible: bool):
+	for board in pattern_boards.values():
+		if board:
+			board.visible = is_visible
+
 
 func _fetch_and_init_channel_data():
 	if !game_manager: return
@@ -286,6 +320,9 @@ func _on_lever_button_pressed():
 	
 	_initialize_costs()
 	print("步骤 2 完成: 交互启用，费用显示。")
+	
+	# 显示弹窗提示玩家
+	Global.show_notification("硬币已从硬币山抽取到通道")
 
 
 func _on_channel_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: int, channel_id: String):
@@ -316,6 +353,9 @@ func _on_channel_area_input_event(_viewport: Node, event: InputEvent, _shape_idx
 			game_manager._handle_channel_selected(channel_id, cost)
 		
 		print("步骤 3 完成: 通道 ", channel_id, " 激活，着色器显示。")
+		
+		# 显示弹窗提示玩家
+		Global.show_notification("通道 %s 已解锁" % channel_id)
 
 
 # ★★★ 步骤 4: Center Button 点击响应 ★★★
@@ -327,7 +367,7 @@ func _on_center_button_pressed():
 	
 	await _play_animation_and_wait(center_anim, ANIM_PRESS)
 	
-	_perform_game_operation() 
+	await _perform_game_operation() 
 	
 	_start_reset_and_cleanup()
 
@@ -335,10 +375,97 @@ func _on_center_button_pressed():
 # 占位函数：执行游戏核心操作 (留白)
 func _perform_game_operation():
 	print("--- 步骤 4: 执行核心游戏操作 (占位符) ---")
-	pass 
+	total_settlement_money = 0
 	
-	print("--- 核心游戏操作完成。---")
+	# 显示所有激活通道的硬币板
+	_set_all_pattern_boards_visible(false)  # 先隐藏所有
+	
+	for channel_id in activated_channels:
+		var board = pattern_boards.get(channel_id)
+		if board:
+			board.visible = true
+			board.fill_grid_from_channel(channel_id)
+	
+	# 计算结算结果
+	await calculate_settlement_results()
+	
+	# 显示总结算结果
+	await show_total_settlement()
+	
+	if game_manager and game_manager.has_method("set_settlement_data"):
+		game_manager.set_settlement_data(total_settlement_money, 0)  # 假设压力变化为0
+	
+	print("--- 核心游戏操作完成，结算金额: ", total_settlement_money, " ---")
 
+func calculate_settlement_results():
+	# 为每个激活的通道计算结算结果
+	for channel_id in activated_channels:
+		var board = pattern_boards.get(channel_id)
+		if board:
+			var coin_grid = board.get_coin_grid()
+			var channel_result = _calculate_channel_result(coin_grid, channel_id)
+			var channel_money = channel_result.get("total_money", 0)
+			
+			total_settlement_money += channel_money
+			
+			print("通道 ", channel_id, " 结算完成: ", channel_money, " 金钱")
+			print("总结算金额: ", total_settlement_money)
+			
+			# 可以在这里高亮显示图案（可选）
+			_highlight_patterns_on_board(board, channel_result)
+
+func _calculate_channel_result(coin_grid: Array, channel_id: String) -> Dictionary:
+	# 使用combo_calculator计算通道结果
+	var game_manager = get_node("/root/GameManager")
+	if game_manager and game_manager.has_method("get_combo_calculator"):
+		var combo_calculator = game_manager.get_combo_calculator()
+		if combo_calculator:
+			return combo_calculator.calculate_channel_results(coin_grid, channel_id)
+	
+	# 备用计算逻辑
+	return calculate_fallback_result(coin_grid)
+
+
+
+func calculate_fallback_result(coin_grid: Array) -> Dictionary:
+	# 简单的备用结算逻辑
+	var total_money = 0
+	var pattern_count = 0
+	
+	for row in coin_grid:
+		for coin_data in row:
+			if coin_data.has("current_value"):
+				total_money += coin_data.current_value
+	
+	return {
+		"total_money": total_money,
+		"pattern_count": pattern_count,
+		"patterns_found": []
+	}
+
+func _highlight_patterns_on_board(board: GridContainer, result: Dictionary):
+	if result.has("patterns_found"):
+		for pattern in result.patterns_found:
+			if pattern.has("shape"):
+				board.highlight_pattern(pattern.shape)
+
+func show_total_settlement():
+	settlement_popup.visible = true
+	settlement_label.text = "本轮总收益: %d 金钱" % total_settlement_money
+	
+	# 播放弹窗动画
+	var tween = create_tween()
+	tween.tween_property(settlement_popup, "scale", Vector2(1, 1), 0.3).from(Vector2(0, 0))
+	
+	# 等待显示
+	await get_tree().create_timer(2.0).timeout
+	
+	# 隐藏弹窗
+	tween = create_tween()
+	tween.tween_property(settlement_popup, "scale", Vector2(0, 0), 0.3)
+	await tween.finished
+	
+	settlement_popup.visible = false
 
 # ★★★ 步骤 5: 结算/重置/跳转 (修正 all() 函数问题) ★★★
 func _start_reset_and_cleanup():
@@ -348,7 +475,7 @@ func _start_reset_and_cleanup():
 	for bar in [bar_A, bar_B, bar_C, bar_D]:
 		bar.visible = false
 		
-	# 2. 隐藏 Tooltip Layer 和所有 Panel 
+	# 2. 隐藏 Tooltip Layer 和所有 Panel 
 	_set_all_tooltip_panels_visible(false)
 	tooltip_layer.visible = false
 	

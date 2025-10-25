@@ -3,7 +3,7 @@
 	"name": "真硬币",
 	"coin_mountain_percentage": 16.6,
 	"base_value": 10,
-	"texture": "res://project/assets/coins/real_coin.png",
+	"texture": "res://project/assets/coins/coin_real.png",
 	"is_direct_cash": true,
 	"has_two_sides": false
   },
@@ -13,8 +13,8 @@
 	"base_value": 2,
 	"high_value": 4,
 	"high_value_probability": 0.2,
-	"texture": "res://project/assets/coins/sun_coin.png",
-	"high_value_texture": "res://project/assets/coins/sun_coin_high.png",
+	"texture": "res://project/assets/coins/coin_sun_low.png",
+	"high_value_texture": "res://project/assets/coins/coin_sun_high.png",
 	"has_two_sides": true,
 	"coin_group": "pattern_coins"
   },
@@ -24,8 +24,8 @@
 	"base_value": 2,
 	"high_value": 4,
 	"high_value_probability": 0.2,
-	"texture": "res://project/assets/coins/moon_coin.png",
-	"high_value_texture": "res://project/assets/coins/moon_coin_high.png",
+	"texture": "res://project/assets/coins/coin_moon_low.png",
+	"high_value_texture": "res://project/assets/coins/coin_moon_high.png",
 	"has_two_sides": true,
 	"coin_group": "pattern_coins"
   },
@@ -35,8 +35,8 @@
 	"base_value": 2,
 	"high_value": 4,
 	"high_value_probability": 0.2,
-	"texture": "res://project/assets/coins/star_coin.png",
-	"high_value_texture": "res://project/assets/coins/star_coin_high.png",
+	"texture": "res://project/assets/coins/coin_star_low.png",
+	"high_value_texture": "res://project/assets/coins/coin_star_high.png",
 	"has_two_sides": true,
 	"coin_group": "pattern_coins"
   },
@@ -46,8 +46,8 @@
 	"base_value": -1,
 	"high_value": -2,
 	"high_value_probability": 0.15,
-	"texture": "res://project/assets/coins/skull_coin.png",
-	"high_value_texture": "res://project/assets/coins/skull_coin_high.png",
+	"texture": "res://project/assets/coins/coin_skull_low.png",
+	"high_value_texture": "res://project/assets/coins/coin_skull_high.png",
 	"has_two_sides": true,
 	"coin_group": "penalty_coins"
   },
@@ -57,8 +57,8 @@
 	"base_value": 3,
 	"high_value": 6,
 	"high_value_probability": 0.15,
-	"texture": "res://project/assets/coins/blood_coin.png",
-	"high_value_texture": "res://project/assets/coins/blood_coin_high.png",
+	"texture": "res://project/assets/coins/coin_blood_low.png",
+	"high_value_texture": "res://project/assets/coins/coin_blood_high.png",
 	"has_two_sides": true,
 	"is_stress_coin": true,
 	"coin_group": "penalty_coins"

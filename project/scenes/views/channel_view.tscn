@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://podshpq7tfpg"]
+[gd_scene load_steps=41 format=3 uid="uid://podshpq7tfpg"]
 
 [ext_resource type="Texture2D" uid="uid://bjthmluto2dus" path="res://project/assets/photo/machine_base.png" id="1_h6jvc"]
 [ext_resource type="Script" uid="uid://b7pmad0l3wo00" path="res://project/scripts/views/channel_view.gd" id="1_q4rof"]
@@ -9,6 +9,7 @@
 [ext_resource type="SpriteFrames" uid="uid://dvl8u8od4jtyv" path="res://project/assets/animation/channel.tres" id="6_td4uq"]
 [ext_resource type="Texture2D" uid="uid://bfjx3a3esj8b0" path="res://project/assets/photo/button.png" id="7_p8wyx"]
 [ext_resource type="Shader" uid="uid://n6jeyu8x4vvc" path="res://project/scenes/views/ChannelProgress.gdshader" id="8_44g7m"]
+[ext_resource type="Script" uid="uid://cn15ds2ghsrix" path="res://project/scripts/components/pattern_grid.gd" id="10_tkvgh"]
 
 [sub_resource type="Animation" id="Animation_5gx8o"]
 length = 0.001
@@ -695,6 +696,62 @@ offset_left = 894.0
 offset_top = 166.0
 offset_right = 969.0
 offset_bottom = 366.0
+
+[node name="PatternBoards" type="Control" parent="InteractionRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PatternBoard_A" type="GridContainer" parent="InteractionRoot/PatternBoards"]
+modulate = Color(0.43761137, 0.44286326, 0.45727718, 1)
+layout_mode = 0
+offset_left = 200.0
+offset_top = 120.0
+offset_right = 350.0
+offset_bottom = 370.0
+script = ExtResource("10_tkvgh")
+
+[node name="PatternBoard_B" type="GridContainer" parent="InteractionRoot/PatternBoards"]
+modulate = Color(0.48570347, 0.48570353, 0.48570347, 1)
+layout_mode = 0
+offset_left = 420.0
+offset_top = 120.0
+offset_right = 570.0
+offset_bottom = 370.0
+script = ExtResource("10_tkvgh")
+
+[node name="PatternBoard_C" type="GridContainer" parent="InteractionRoot/PatternBoards"]
+modulate = Color(0.4392157, 0.44313726, 0.45882353, 1)
+layout_mode = 0
+offset_left = 640.0
+offset_top = 120.0
+offset_right = 790.0
+offset_bottom = 370.0
+script = ExtResource("10_tkvgh")
+
+[node name="PatternBoard_D" type="GridContainer" parent="InteractionRoot/PatternBoards"]
+modulate = Color(0.4392157, 0.44313726, 0.45882353, 1)
+layout_mode = 0
+offset_left = 860.0
+offset_top = 120.0
+offset_right = 1010.0
+offset_bottom = 370.0
+script = ExtResource("10_tkvgh")
+
+[node name="SettlementPopup" type="Control" parent="InteractionRoot"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Panel" type="Panel" parent="InteractionRoot/SettlementPopup"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SettlementLabel" type="Label" parent="InteractionRoot/SettlementPopup"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
 
 [node name="TooltipLayer" type="Control" parent="."]
 layout_mode = 3

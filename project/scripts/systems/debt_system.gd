@@ -7,9 +7,8 @@ var debt_paid: int = 0
 var debt_targets: Dictionary = {}
 var round_history: Array = []
 
-@onready var currency_system = Global.get_currency_system()
-@onready var stress_system = Global.get_stress_system()
-
+var currency_system = null
+var stress_system = null
 signal debt_round_changed(major_round: int, sub_round: int)
 signal debt_target_updated(target_amount: int, paid_amount: int, remaining: int)
 signal debt_paid_successful(amount: int, round_number: int)
@@ -20,6 +19,8 @@ signal game_victory # 新增：游戏胜利信号
 
 func _ready():
 	load_debt_config()
+	stress_system = Global.get_stress_system()
+	currency_system = Global.get_currency_system()
 
 func load_debt_config():
 	var file = FileAccess.open("res://project/data/debt_config.json", FileAccess.READ)
@@ -136,6 +137,7 @@ func check_round_balance(round_earned: int, round_spent: int):
 		stress_system.change_stress(-debt_config.penalties.round_profit_stress_decrease, "round_profit")
 
 func check_debt_default():
+	currency_system = Global.get_currency_system()
 	var target = get_current_debt_target()
 	var total_money = currency_system.get_money_breakdown().total_money
 	

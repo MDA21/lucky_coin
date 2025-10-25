@@ -50,6 +50,9 @@ var bank_system: Node = null
 var event_system: Node = null
 var pattern_system: Node = null
 
+var total_settlement_money: int = 0
+var settlement_stress_change: int = 0
+
 #当新游戏成功开始并初始化后发出此信号
 signal game_started
 
@@ -278,7 +281,7 @@ func _update_hud_stats():
 		
 # --- 新增：一个更新金币的公共函数 ---
 func add_gold(amount: float):
-	Global.current_gold += amount
+	currency_system.player_currency.normal_money += amount
 	# 调用步骤 2 中的函数来更新 HUD
 	_update_hud_stats() 
 
@@ -311,6 +314,8 @@ func end_player_turn():
 		
 	# 推进到下一个小回合（6大回合×4小回合）
 	Global.advance_sub_round()
+	
+	Global.show_notification("第 %d 小回合结束" % Global.current_sub_round)
 	
 func _on_global_game_over(reason: String):
 	"""
@@ -503,13 +508,27 @@ func _get_channel_costs() -> Array:
 	# 占位符
 	return [100,200,300]
 
-# [TODO] 告知gamemanager该通道被选择
+# [DONE] 告知gamemanager该通道被选择
 func _handle_channel_selected(channel_id: String, cost: int):
 	"""
 	告知gamemanager该通道被选择
 	第一个参数为"A"/"B"/"C"/"D" 后一个参数为价格
 	"""
-	pass
+	print("通道 ", channel_id, " 被选择，费用: ", cost)
+	
+	# 扣除费用
+	if currency_system and currency_system.has_method("spend_money"):
+		var success = currency_system.spend_money(cost, "channel_unlock")
+		if success:
+			print("成功扣除通道费用: ", cost)
+			# 显示弹窗提示
+			Global.show_notification("通道 %s 解锁成功\n花费 %d 元" % [channel_id, cost])
+		else:
+			print("扣除通道费用失败，资金不足")
+			Global.show_notification("资金不足，无法解锁通道 %s" % channel_id)
+	
+	# 更新 HUD 显示
+	_update_hud_stats()
 
 # 检查并应用道具效果
 func check_item_effects():
@@ -621,29 +640,49 @@ func get_available_events() -> Array:
 func is_event_system_ready() -> bool:
 	return event_system != null and event_system.has_method("offer_events")
 
-# [TODO] 用于更新场景弹窗的数额，并执行加款
+# [DONE] 用于更新场景弹窗的数额，并执行加款
 func process_channel_view_cleanup_and_switch():
 	"""
 	跳转至hall_view，更新弹窗显示金币数额，播放弹窗，标识回合结束，增加玩家金钱数量，
 	"""
+	# 保存结算结果
+	var coin_amount = total_settlement_money
+	
+	# 重置结算数据
+	total_settlement_money = 0
+	settlement_stress_change = 0
+	
+	# 切换到大厅视图
 	_change_view(2)
 	await get_tree().process_frame
 	
-	# [TODO] 获取本次的金币
-	var coin_amount: float = 100.0 # 默认
-	
-# 3. 调用 HallView 的金币掉落函数
-	# 必须检查 current_view_node 是否为 HallView 且方法是否存在
+	# 调用 HallView 的金币掉落函数
 	if is_instance_valid(current_view_node) and current_view_index == 2:
-		
-		# 确保 HallView 具有目标函数签名
 		if current_view_node.has_method("_on_coin_drop_signal_received"):
-			
-			# 【核心调用】执行 HallView 的方法
 			current_view_node._on_coin_drop_signal_received(coin_amount)
-			
 			print("GameManager: HallView 金币掉落函数已成功调用。")
+			
+			# 等待动画播放
+			await get_tree().create_timer(3.0).timeout
 		else:
 			push_error("HallView 缺少 _on_coin_drop_signal_received 方法！")
 	else:
 		push_error("场景切换失败，无法找到 HallView 节点。")
+	
+	# 处理回合结束逻辑
+	end_player_turn()
+
+func set_settlement_data(money: int, stress_change: int = 0):
+	"""
+	设置结算数据，从channel_view调用
+	"""
+	total_settlement_money = money
+	settlement_stress_change = stress_change
+	print("GameManager: 收到结算数据 - 金钱: ", money, ", 压力变化: ", stress_change)
+	# 更新金钱
+	if money > 0:
+		add_gold(money)
+	
+	# 更新压力
+	if stress_system and stress_change != 0:
+		stress_system.change_stress(stress_change, "round_settlement")

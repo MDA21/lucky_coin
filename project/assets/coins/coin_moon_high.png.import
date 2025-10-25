@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjlmi5m3asoiu"
-path="res://.godot/imported/coin_star_low.png-6e1f7455b3f5e152be971c95ca88da4a.ctex"
+uid="uid://dtganyo8q6p5a"
+path="res://.godot/imported/coin_moon_high.png-5b7727252cf92e844e83191795e9f81c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://project/assets/coin/coin_star_low.png"
-dest_files=["res://.godot/imported/coin_star_low.png-6e1f7455b3f5e152be971c95ca88da4a.ctex"]
+source_file="res://project/assets/coins/coin_moon_high.png"
+dest_files=["res://.godot/imported/coin_moon_high.png-5b7727252cf92e844e83191795e9f81c.ctex"]
 
 [params]
 

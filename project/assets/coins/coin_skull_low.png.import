@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cihei2c68ccm4"
-path="res://.godot/imported/coin_skull_low.png-ba6f43edeb80b7e95f0179a66bcdfbdc.ctex"
+path="res://.godot/imported/coin_skull_low.png-c9643c870d7fdac6e6865c4f8245aa8c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://project/assets/coin/coin_skull_low.png"
-dest_files=["res://.godot/imported/coin_skull_low.png-ba6f43edeb80b7e95f0179a66bcdfbdc.ctex"]
+source_file="res://project/assets/coins/coin_skull_low.png"
+dest_files=["res://.godot/imported/coin_skull_low.png-c9643c870d7fdac6e6865c4f8245aa8c.ctex"]
 
 [params]
 
