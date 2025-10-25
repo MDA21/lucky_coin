@@ -8,6 +8,8 @@ var active_loans: Array = []  # 存储活跃贷款
 signal bank_data_updated(new_savings)
 signal loan_added(loan_data: Dictionary)  # 新增贷款信号
 signal loan_due_check(loan_data: Dictionary)  # 贷款到期检查信号
+signal loans_updated()  # 新增：贷款状态更新信号
+signal loan_repaid(amount: float)  # 新增：贷款偿还信号
 
 var stress_system = null
 
@@ -102,9 +104,16 @@ func _update_loans_rounds():
 			loans_to_remove.append(i)
 			_check_loan_repayment(loan)
 	
+	var had_removals
 	# 移除已处理的贷款（倒序删除避免索引问题）
 	for i in range(loans_to_remove.size() - 1, -1, -1):
 		active_loans.remove_at(loans_to_remove[i])
+		had_removals = true
+		
+	# 如果有贷款被移除，发出更新信号
+	if had_removals:
+		loans_updated.emit()
+		had_removals = false
 
 # 检查贷款偿还
 func _check_loan_repayment(loan_data: Dictionary):
@@ -116,7 +125,10 @@ func _check_loan_repayment(loan_data: Dictionary):
 		if Global.currency_system.spend_money(total_repayment, "loan_repayment"):
 			Global.show_notification("贷款已偿还: %s 元" % total_repayment)
 			# 减少压力值（偿还后压力清零）
-			Global.stress_system.reduce_stress(loan_data.stress_value, "loan_repaid")
+			Global.stress_system.change_stress(-loan_data.stress_value, "loan_repaid")
+			loan_repaid.emit(total_repayment)
+			loans_updated.emit()  # 通知贷款状态更新
+	
 	else:
 		# 无法偿还，游戏失败
 		Global.show_notification("无法偿还贷款！游戏结束")
@@ -244,7 +256,7 @@ func take_loan_with_all_effects(amount: float, is_interest_free: bool = false):
 		var loan_data = {
 			"amount": amount,
 			"total_repayment": amount,  # 只还本金
-			"remaining_rounds": 6,
+			"remaining_rounds": 4,
 			"stress_value": _calculate_loan_stress(amount) * 0.5  # 无息贷款压力减半
 		}
 		
@@ -254,8 +266,8 @@ func take_loan_with_all_effects(amount: float, is_interest_free: bool = false):
 		loan_added.emit(loan_data)
 		return
 	
-	# 正常贷款，六轮还
-	take_loan(amount, 6)
+	# 正常贷款，四轮还
+	take_loan(amount, 4)
 
 # 获取扩展贷款选项
 func get_expanded_loan_options() -> Array:

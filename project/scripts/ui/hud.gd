@@ -29,6 +29,9 @@ func _ready():
 	# 连接信号
 	if bank_system:
 		bank_system.loan_added.connect(_on_loan_added)
+		bank_system.loans_updated.connect(_on_loans_updated)  # 新增：连接贷款更新信号
+		bank_system.loan_repaid.connect(_on_loan_repaid)      # 新增：连接贷款偿还信号
+		
 	if currency_system:
 		currency_system.money_changed.connect(_on_money_changed)
 	if stress_system:
@@ -82,6 +85,16 @@ func _on_loan_added(loan_data: Dictionary):
 	# 可以在这里添加贷款的特殊显示效果
 	print("新增贷款: ", loan_data.amount, " 压力增加: ", loan_data.stress_value)
 	# 强制更新HUD显示
+	update_stats()
+	
+func _on_loans_updated():
+	"""当贷款状态更新时更新显示"""
+	print("贷款状态更新，刷新HUD显示")
+	update_stats()
+	
+func _on_loan_repaid(amount: float):
+	"""当贷款偿还时更新显示"""
+	print("贷款偿还: ", amount, "，刷新HUD显示")
 	update_stats()
 
 func _on_money_changed(normal_money: int, loan_money: int, total_money: int):
