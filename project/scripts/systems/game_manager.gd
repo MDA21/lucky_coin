@@ -398,7 +398,7 @@ func is_game_won() -> bool:
 	'''
 	根据金币判断是否胜利
 	'''
-	return Global.current_money >= Global.required_gold
+	return [TODO]
 	
 # 在出口场景中调用，用于游戏胜利并返回主菜单
 func process_game_victory():
