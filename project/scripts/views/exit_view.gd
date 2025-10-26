@@ -52,12 +52,8 @@ func _show_popup(message: String):
 		
 # 初始化函数
 func _ready():
-	# 1. 初始化游戏状态：检查全局胜利状态
-	
-	if game_manager.is_game_won(): # 调用 GameManager 的 is_game_won() 方法
-		current_door_state = STATE_UNLOCKED
-	else:
-		current_door_state = STATE_LOCKED
+	# 1. 初始状态：门是锁定的
+	current_door_state = STATE_LOCKED
 		
 	# 2. 初始化视图可见性：默认显示远景
 	_set_view(false) # 设置 is_close_up = false
@@ -69,6 +65,19 @@ func _ready():
 	remote_door_area.input_event.connect(_on_remote_door_input_event)
 	closeup_door_area.input_event.connect(_on_closeup_door_input_event)
 	
+	# 5. 连接Global的游戏结束信号
+	Global.game_over.connect(_on_global_game_over)
+	
+
+# 游戏结束信号处理
+func _on_global_game_over(reason: String):
+	"""当游戏结束时调用，检查是否是胜利"""
+	if reason == "victory":
+		print("ExitView: 收到胜利信号，解锁门")
+		current_door_state = STATE_UNLOCKED
+		_update_remote_sprite()
+		_show_popup("门已解锁！现在你可以离开了。")
+
 # 负责远景三张图片切换
 func _update_remote_sprite():
 	match current_door_state:

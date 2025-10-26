@@ -317,7 +317,7 @@ func end_player_turn():
 	
 	
 	if Global.current_sub_round == 1 and Global.current_round > 1:
-		Global.show_notification("第 %d 大回合开始" % Global.current_round)
+		Global.show_notification("第 %d 大回合第1小回合结束" % Global.current_round)
 	else:
 		Global.show_notification("第 %d 小回合结束" % Global.current_sub_round)
 		
@@ -405,7 +405,7 @@ func is_game_won() -> bool:
 	return false
 
 	
-# 在出口场景中调用，用于游戏胜利并返回主菜单
+# 在出口场景中调用，用于游戏胜利
 func process_game_victory():
 	"""
 	当 ExitView 确认玩家胜利退出时调用此函数。
@@ -420,8 +420,7 @@ func process_game_victory():
 	var timer = get_tree().create_timer(4.0)
 	await timer.timeout
 	
-	# 3. 返回主菜单
-	return_to_main_menu()
+	_change_view(4)
 
 # === 系统获取方法 ===
 func get_currency_system() -> Node:
@@ -526,7 +525,7 @@ func _unhandled_input(event: InputEvent):
 			
 		get_viewport().set_input_as_handled()
 
-# [TODO] 获取概率的四个函数
+
 # [DONE] 获取概率的四个函数 - 基于coin_system的实际数据
 func _get_channel_a_data() -> Array:
 	"""获取通道A的真实硬币分布数据"""

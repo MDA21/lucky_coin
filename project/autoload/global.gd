@@ -111,8 +111,6 @@ func connect_system_signals():
 	
 	# 【新增】连接债务系统信号
 	if debt_system:
-		if debt_system.has_signal("debt_default"):
-			debt_system.debt_default.connect(_on_debt_default)
 		if debt_system.has_signal("game_victory"):
 			debt_system.game_victory.connect(_on_game_victory)
 	
@@ -271,8 +269,8 @@ func check_game_end_conditions():
 
 func trigger_game_over(reason: String):
 	"""
-	触发游戏结束 - 显示通知并返回主界面
-	"""
+    触发游戏结束 - 只有失败才返回主界面，胜利则不返回
+    """
 	# 检查是否已经处于游戏结束状态，避免重复触发
 	if game_state == "game_over":
 		return
@@ -289,13 +287,17 @@ func trigger_game_over(reason: String):
 	# 发出游戏结束信号
 	game_over.emit(reason)
 	
-	# 创建计时器，等待几秒后返回主菜单
-	var timer = Timer.new()
-	timer.wait_time = 3.0  # 3秒后返回主菜单
-	timer.one_shot = true
-	add_child(timer)
-	timer.timeout.connect(_return_to_main_menu_after_game_over)
-	timer.start()
+	# 只有失败才返回主菜单，胜利则不返回
+	if reason != "victory":
+		# 创建计时器，等待几秒后返回主菜单
+		var timer = Timer.new()
+		timer.wait_time = 3.0  # 3秒后返回主菜单
+		timer.one_shot = true
+		add_child(timer)
+		timer.timeout.connect(_return_to_main_menu_after_game_over)
+		timer.start()
+	else:
+		trigger_game_victory()
 
 func _get_game_over_message(reason: String) -> String:
 	"""根据游戏结束原因返回对应的消息"""
@@ -369,11 +371,6 @@ func _on_stress_effect_changed(distortion: float, filter: float):
 
 func _on_stress_max_reached():
 	stress_max_reached.emit()
-
-# 【新增】债务违约信号处理
-func _on_debt_default(round_number: int, target_amount: int, paid_amount: int):
-	"""处理债务违约"""
-	trigger_game_over("债务违约")
 
 # 【新增】游戏胜利信号处理
 func _on_game_victory():

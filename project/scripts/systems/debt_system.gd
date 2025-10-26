@@ -82,7 +82,7 @@ func can_afford_debt() -> bool:
 	var total_money = currency_system.get_money_breakdown().total_money
 	return total_money >= get_current_debt_target()
 
-func pay_debt(amount: int = -1) -> bool:
+'''func pay_debt(amount: int = -1) -> bool:
 	var target_amount = get_current_debt_target()
 	var remaining_amount = target_amount - debt_paid
 	
@@ -96,31 +96,31 @@ func pay_debt(amount: int = -1) -> bool:
 	if amount <= 0:
 		return true  # 已经完成
 	
-	if currency_system.spend_money(amount, "debt_payment", "auto"):
-		debt_paid += amount
-		debt_paid_successful.emit(amount, current_major_round)
-		update_debt_target_display()
-		
-		# 检查是否完成当前回合债务
-		if debt_paid >= target_amount:
-			complete_round_debt()
-		
-		return true
+	# 债务只能用普通货币支付，所以检查普通货币是否足够
+	if currency_system.get_normal_money() >= amount:
+		# 使用 "normal" 模式确保只用普通货币支付
+		if currency_system.spend_money(amount, "debt_payment", "normal"):
+			debt_paid += amount
+			debt_paid_successful.emit(amount, current_major_round)
+			update_debt_target_display()
+			
+			# 检查是否完成当前回合债务
+			if debt_paid >= target_amount:
+				complete_round_debt()
+			
+			return true
 	
-	return false
+	return false'''#无提前还款
 
 func complete_round_debt():
 	# 记录回合历史
 	round_history.append({
 		"round": current_major_round,
 		"target": get_current_debt_target(),
-		"paid": debt_paid,
+		"paid": get_current_debt_target(),  # 全额支付
 		"completed": true,
 		"timestamp": Time.get_unix_time_from_system()
 	})
-	
-	# 重置已支付金额，准备下一回合
-	debt_paid = 0
 	
 	# 压力减少（盈利时）
 	stress_system.change_stress(-debt_config.penalties.round_profit_stress_decrease, "debt_paid")
@@ -136,21 +136,25 @@ func check_round_balance(round_earned: int, round_spent: int):
 	else:
 		stress_system.change_stress(-debt_config.penalties.round_profit_stress_decrease, "round_profit")
 
-func check_debt_default():
-	var stress_system = null
-	currency_system = Global.get_currency_system()
-	stress_system = Global.get_stress_system()
+func check_debt_default() -> bool:
+	# 确保系统引用正确
+	if not currency_system:
+		currency_system = Global.get_currency_system()
+	if not stress_system:
+		stress_system = Global.get_stress_system()
+	
 	# 第一个大回合不检查违约，给玩家适应期
 	if current_major_round <= 1:
 		return false
 	
 	var target = get_current_debt_target()
-	var total_money = currency_system.get_money_breakdown().total_money
+	# 只检查普通货币是否足够支付债务
+	var normal_money = currency_system.get_normal_money()
 	
-	if total_money < target:
+	if normal_money < target:
 		# 无法偿还债务
 		stress_system.change_stress(debt_config.penalties.cannot_repay_stress_increase, "debt_default")
-		debt_default.emit(current_major_round, target, total_money)
+		debt_default.emit(current_major_round, target, normal_money)
 		trigger_game_over("debt_default")
 		return true
 	
@@ -165,8 +169,8 @@ func trigger_game_over(reason: String):
 
 func update_debt_target_display():
 	var target = get_current_debt_target()
-	var remaining = max(0, target - debt_paid)
-	debt_target_updated.emit(target, debt_paid, remaining)
+	#var remaining = max(0, target - debt_paid)
+	debt_target_updated.emit(target, 0, target)
 
 func get_debt_progress() -> Dictionary:
 	var target = get_current_debt_target()
@@ -174,9 +178,9 @@ func get_debt_progress() -> Dictionary:
 		"current_round": current_major_round,
 		"current_sub_round": current_sub_round,
 		"target_amount": target,
-		"paid_amount": debt_paid,
-		"remaining_amount": max(0, target - debt_paid),
-		"progress_percentage": float(debt_paid) / float(target) if target > 0 else 0.0
+		"paid_amount": 0,
+		"remaining_amount": target,
+		"progress_percentage": 0.0
 	}
 
 func get_round_history() -> Array:
@@ -222,44 +226,42 @@ func get_debt_completion_status() -> Dictionary:
 				break
 	return status
 	
-func process_major_round_end():
-	"""在大回合结束时调用，自动扣除债务"""
-	currency_system = Global.get_currency_system()
-	var target_amount = get_current_debt_target()
-	var remaining_amount = target_amount - debt_paid
+func process_major_round_end() -> bool:
+	"""在大回合结束时调用，强制扣除债务"""
+	# 确保系统引用正确
+	if not currency_system:
+		currency_system = Global.get_currency_system()
 	
-	# 如果当前回合已经支付了部分债务，只扣除剩余部分
-	if remaining_amount > 0:
-		# 检查玩家是否有足够的钱支付剩余债务
-		if currency_system.can_afford(remaining_amount):
-			# 自动扣除债务
-			if currency_system.spend_money(remaining_amount, "debt_payment_auto", "auto"):
-				debt_paid += remaining_amount
-				Global.show_notification("自动扣除债务: %d 元" % remaining_amount)
-				complete_round_debt()
-				return true
-			else:
-				# 扣除失败，触发违约
-				trigger_debt_default()
-				return false
+	var target_amount = get_current_debt_target()
+	
+	# 检查玩家是否有足够的普通货币支付债务
+	if currency_system.get_normal_money() >= target_amount:
+		# 自动扣除债务，使用普通货币
+		if currency_system.spend_money(target_amount, "debt_payment_auto", "normal"):
+			Global.show_notification("自动扣除债务: %d 元" % target_amount)
+			# 完成当前回合债务
+			complete_round_debt()
+			return true
 		else:
-			# 资金不足，触发违约
+			# 扣除失败，触发违约
 			trigger_debt_default()
 			return false
 	else:
-		# 债务已经完成
-		complete_round_debt()
-		return true
+		# 资金不足，触发违约
+		trigger_debt_default()
+		return false
 
 func trigger_debt_default():
 	"""触发债务违约"""
+	stress_system = Global.get_stress_system()
 	var target = get_current_debt_target()
+	var normal_money = currency_system.get_normal_money()
 	
 	# 记录违约历史
 	round_history.append({
 		"round": current_major_round,
 		"target": target,
-		"paid": debt_paid,
+		"paid": normal_money,
 		"completed": false,
 		"defaulted": true,
 		"timestamp": Time.get_unix_time_from_system()
@@ -283,21 +285,17 @@ func process_end_of_round():
 			var target = get_current_debt_target()
 			if debt_paid < target:
 				# 大回合结束时债务未完成，触发违约
-				check_debt_default()
+				return
+				#这也是一个废案别管
 		
 func advance_major_round() -> bool:
 	"""推进到大回合，返回是否成功（没有违约）"""
-	# 先检查当前大回合的债务是否完成
-	var target = get_current_debt_target()
-	if debt_paid < target:
-		# 债务未完成，触发违约
-		trigger_debt_default()
-		return false
 	
-	# 债务完成，记录历史
-	complete_round_debt()
+	# 在大回合推进时处理债务支付
+	if not process_major_round_end():
+		return false  # 债务支付失败，游戏结束
 	
-	# 推进到下一大回合
+	# 债务支付成功，推进到下一大回合
 	current_major_round += 1
 	current_sub_round = 1
 	
@@ -311,8 +309,7 @@ func advance_major_round() -> bool:
 		check_game_victory()
 		return true
 	
-	# 重置已支付金额，准备下一回合
-	debt_paid = 0
+	# 更新债务目标显示
 	update_debt_target_display()
 	debt_round_changed.emit(current_major_round, current_sub_round)
 	
